@@ -1,4 +1,6 @@
 import Database from "better-sqlite3";
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import type { Birthday, Trait, WishCache } from "../types.js";
 
 let db: Database.Database;
@@ -11,6 +13,7 @@ export function getDb(): Database.Database {
 }
 
 export function initDb(path: string = "data/birthdays.db"): void {
+  mkdirSync(dirname(path), { recursive: true });
   db = new Database(path);
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");

@@ -14,7 +14,8 @@ Dank, meme-heavy birthday wishes for a private Discord server (~20 people). Runs
   - `/missing` — list members without birthdays
 - **Auto-scraped traits** — pulls roles, nicknames, and join dates from Discord profiles to feed the LLM
 - **Monthly wish regeneration** — re-generates all birthday messages on the 1st of each month via DeepSeek API
-- **Birthday locking** — self-set birthdays can only be changed by the owner or a server admin
+- **Birthday locking** — self-set birthdays can only be changed by the owner, a server admin, or the bot admin
+- **Admin notifications** — DM on startup (with commit hash) and on unhandled errors when `BOT_ADMIN_ID` is set
 - **Auto-deployment** — Pi polls GitHub every 5 min for new commits on `main`, pulls, builds, restarts
 
 ## Tech Stack
@@ -97,6 +98,7 @@ Or add one at a time with slash commands once the bot is online:
 | `DISCORD_APP_ID` | Application ID from General Information |
 | `DISCORD_GUILD_ID` | Your server's ID (right-click server → Copy ID) |
 | `ANNOUNCEMENTS_CHANNEL_ID` | Channel ID for birthday posts |
+| `BOT_ADMIN_ID` | (Optional) Your Discord user ID — gets DM notifications on startup/errors + can override locked birthdays |
 | `DEEPSEEK_API_KEY` | DeepSeek API key |
 
 ## Development
