@@ -75,9 +75,16 @@ sudo systemctl status birthday-bot
 journalctl -u birthday-bot -f
 ```
 
-### 5. Seed birthdays
+### 5. Seed the initial birthday list
 
-Once the bot is online, use slash commands in Discord:
+Copy the example file, edit with real Discord user IDs, and run:
+```bash
+cp scripts/seed.example.json scripts/seed.json
+nano scripts/seed.json       # replace placeholder snowflakes, set locked: true for self-set
+npx tsx scripts/seed.ts
+```
+
+Or add one at a time with slash commands once the bot is online:
 ```
 /set-birthday @yourself 03-14
 ```
