@@ -8,6 +8,8 @@ export interface MockInteractionOptions {
   date?: string;
   traits?: string;
   guild?: Record<string, unknown> | null;
+  /** Role IDs the caller has (for role-gate tests) */
+  roleIds?: string[];
 }
 
 /**
@@ -31,10 +33,22 @@ export function mockInteraction(
     ? { has: vi.fn().mockReturnValue(true) } as unknown
     : { has: vi.fn().mockReturnValue(false) } as unknown;
 
+  const roleSet = new Set(options.roleIds ?? []);
+
   return {
     user: { id: options.callerId ?? "caller-1" },
     options: mockOptions,
     memberPermissions,
+    member: {
+      roles: {
+        cache: {
+          has: (id: string) => roleSet.has(id),
+        },
+      },
+      permissions: {
+        has: (perm: string) => options.isAdmin ?? false,
+      },
+    },
     guild: options.guild !== undefined ? options.guild : null,
     reply: vi.fn().mockResolvedValue(undefined),
   } as unknown as ChatInputCommandInteraction;

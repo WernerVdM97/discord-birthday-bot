@@ -25,6 +25,8 @@ export interface DiscordConfig {
   guildId: string;
   announcementsChannelId: string;
   botAdminId?: string;
+  adminRoleId?: string;
+  memberRoleId?: string;
 }
 
 export interface LLMConfig {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { handleSetBirthday } from "../../src/commands/set-birthday.js";
 import { initDb, getBirthday, isBirthdayLocked } from "../../src/lib/db.js";
 import { mockInteraction } from "./helpers.js";
@@ -273,5 +273,76 @@ describe("handleSetBirthday", () => {
     await handleSetBirthday(adminUpdate);
 
     expect(getBirthday("u1")!.birthday).toBe("09-09");
+  });
+});
+
+describe("handleSetBirthday with role gate", () => {
+  beforeEach(() => {
+    process.env["BOT_ADMIN_ROLE_ID"] = "role-admin";
+    process.env["BOT_MEMBER_ROLE_ID"] = "role-member";
+  });
+
+  afterEach(() => {
+    delete process.env["BOT_ADMIN_ROLE_ID"];
+    delete process.env["BOT_MEMBER_ROLE_ID"];
+  });
+
+  it("rejects users without a role", async () => {
+    const interaction = mockInteraction({
+      callerId: "u1",
+      user: { id: "u1", displayName: "Alice" },
+      date: "03-14",
+    });
+
+    await handleSetBirthday(interaction);
+
+    expect(interaction.reply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.stringContaining("permission"),
+      })
+    );
+  });
+
+  it("allows admin role to set anyone's birthday", async () => {
+    const interaction = mockInteraction({
+      callerId: "u1",
+      user: { id: "u2", displayName: "Bob" },
+      roleIds: ["role-admin"],
+      date: "12-25",
+    });
+
+    await handleSetBirthday(interaction);
+
+    expect(getBirthday("u2")!.birthday).toBe("12-25");
+  });
+
+  it("allows member role to set own birthday", async () => {
+    const interaction = mockInteraction({
+      callerId: "u1",
+      user: { id: "u1", displayName: "Alice" },
+      roleIds: ["role-member"],
+      date: "03-14",
+    });
+
+    await handleSetBirthday(interaction);
+
+    expect(getBirthday("u1")!.birthday).toBe("03-14");
+  });
+
+  it("blocks member from setting someone else's birthday", async () => {
+    const interaction = mockInteraction({
+      callerId: "u1",
+      user: { id: "u2", displayName: "Bob" },
+      roleIds: ["role-member"],
+      date: "12-25",
+    });
+
+    await handleSetBirthday(interaction);
+
+    expect(interaction.reply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.stringContaining("own birthday"),
+      })
+    );
   });
 });

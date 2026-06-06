@@ -1,9 +1,18 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import { clearManualTraits, addTrait } from "../lib/db.js";
+import { isMemberOrAbove, isRoleGateActive } from "../lib/roles.js";
 
 export async function handleSetTraits(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
+  if (isRoleGateActive() && !isMemberOrAbove(interaction)) {
+    await interaction.reply({
+      content: "You don't have permission to set traits.",
+      ephemeral: true,
+    });
+    return;
+  }
+
   const user = interaction.options.getUser("user", true);
   const rawTraits = interaction.options.getString("traits", true);
 

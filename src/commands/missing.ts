@@ -1,9 +1,18 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import { getAllBirthdays } from "../lib/db.js";
+import { isMemberOrAbove, isRoleGateActive } from "../lib/roles.js";
 
 export async function handleMissing(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
+  if (isRoleGateActive() && !isMemberOrAbove(interaction)) {
+    await interaction.reply({
+      content: "You don't have permission to use this command.",
+      ephemeral: true,
+    });
+    return;
+  }
+
   const guild = interaction.guild;
   if (!guild) {
     await interaction.reply({

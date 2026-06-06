@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { handleSetTraits } from "../../src/commands/set-traits.js";
 import { initDb, getTraits } from "../../src/lib/db.js";
 import { mockInteraction } from "./helpers.js";
@@ -74,5 +74,43 @@ describe("handleSetTraits", () => {
         ephemeral: true,
       })
     );
+  });
+});
+
+describe("handleSetTraits with role gate", () => {
+  beforeEach(() => {
+    process.env["BOT_ADMIN_ROLE_ID"] = "role-admin";
+    process.env["BOT_MEMBER_ROLE_ID"] = "role-member";
+  });
+
+  afterEach(() => {
+    delete process.env["BOT_ADMIN_ROLE_ID"];
+    delete process.env["BOT_MEMBER_ROLE_ID"];
+  });
+
+  it("rejects users without a role", async () => {
+    const interaction = mockInteraction({
+      traits: "admin, memelord",
+    });
+
+    await handleSetTraits(interaction);
+
+    expect(interaction.reply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.stringContaining("permission"),
+      })
+    );
+  });
+
+  it("allows member role to set traits", async () => {
+    const interaction = mockInteraction({
+      roleIds: ["role-member"],
+      traits: "admin, memelord",
+    });
+
+    await handleSetTraits(interaction);
+
+    const manual = getTraits("u1").filter((t) => t.source === "manual");
+    expect(manual).toHaveLength(2);
   });
 });

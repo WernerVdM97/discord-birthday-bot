@@ -16,6 +16,7 @@ Dank, meme-heavy birthday wishes for a private Discord server (~20 people). Runs
 - **Auto-scraped traits** — pulls roles, nicknames, and join dates from Discord profiles to feed the LLM
 - **Monthly wish regeneration** — re-generates all birthday messages on the 1st of each month via DeepSeek API
 - **Birthday locking** — self-set birthdays can only be changed by the owner, a server admin, or the bot admin
+- **Role-based access** — restrict writing commands (`/set-birthday`, `/set-traits`, `/missing`) to specific Discord roles via `BOT_ADMIN_ROLE_ID` and `BOT_MEMBER_ROLE_ID`
 - **Admin notifications** — DM on startup (with commit hash) and on unhandled errors when `BOT_ADMIN_ID` is set
 - **Auto-deployment** — Pi polls GitHub every 5 min for new commits on `main`, pulls, builds, restarts
 
@@ -100,7 +101,13 @@ Or add one at a time with slash commands once the bot is online:
 | `DISCORD_GUILD_ID` | Your server's ID (right-click server → Copy ID) |
 | `ANNOUNCEMENTS_CHANNEL_ID` | Channel ID for birthday posts |
 | `BOT_ADMIN_ID` | (Optional) Your Discord user ID — gets DM notifications on startup/errors + can override locked birthdays |
+| `BOT_ADMIN_ROLE_ID` | (Optional) Discord role ID for admins — can set any birthday and override locks |
+| `BOT_MEMBER_ROLE_ID` | (Optional) Discord role ID for members — can set their own birthday and traits |
 | `DEEPSEEK_API_KEY` | DeepSeek API key |
+
+> **Getting role IDs:** Enable Developer Mode in Discord (Settings → Advanced). Then go to Server Settings → Roles → right-click the role → Copy ID.
+>
+> If no role IDs are set, all commands are open to everyone (backwards compatible). When set, read-only commands stay public but write commands require at least the member role.
 
 ## Development
 
