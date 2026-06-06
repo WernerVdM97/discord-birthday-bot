@@ -1,0 +1,7 @@
+[Unit]
+Description=Check for Discord birthday bot updates
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/root/discord-birthday-bot/scripts/deploy-check.sh
