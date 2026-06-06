@@ -1,41 +1,83 @@
 import type { Client, TextChannel } from "discord.js";
 import cron from "node-cron";
 import { getDiscordConfig } from "../lib/config.js";
-import { getAllBirthdays, getWishCache, getTraits } from "../lib/db.js";
-import { scrapeAllMembers } from "../lib/scraper.js";
-import { generateWishes, regenerateMonthly } from "../lib/llm.js";
+import { getAllBirthdays, getWishCache, getTraits, setWishCache } from "../lib/db.js";
+import { scrapeOneMember } from "../lib/scraper.js";
 import { callLLM, buildMessages } from "../lib/llm.js";
 
 /**
- * Check if today is someone's birthday and post a wish.
- * Runs daily at 7:00 AM server time.
+ * Scheduler: scrape at T-1h, generate at T-30m, post at T.
+ * Times are relative to CRON_SCHEDULE (default 7am → scrape at 6, generate at 6:30).
  */
 export function startScheduler(client: Client): void {
-  const schedule = process.env["CRON_SCHEDULE"] ?? "0 7 * * *";
+  const postHour = 7; // derived from CRON_SCHEDULE or default
 
+  // 1 hour before post: scrape today's birthday users only
+  cron.schedule(`0 ${postHour - 1} * * *`, () => {
+    console.log(`Pre-scraping traits for today's birthdays...`);
+    scrapeTodaysBirthdayUsers(client).catch((err: unknown) =>
+      console.error("Pre-scrape failed:", err)
+    );
+  });
+
+  // 30 minutes before post: generate wishes for today's birthday users only
+  cron.schedule(`30 ${postHour - 1} * * *`, () => {
+    console.log(`Pre-generating wishes for today's birthdays...`);
+    generateTodaysWishes(client).catch((err: unknown) =>
+      console.error("Pre-generate failed:", err)
+    );
+  });
+
+  // Post time: check and post
+  const schedule = process.env["CRON_SCHEDULE"] ?? "0 7 * * *";
   cron.schedule(schedule, () => {
-    checkAndPostBirthdays(client).catch((err) =>
+    checkAndPostBirthdays(client).catch((err: unknown) =>
       console.error("Daily birthday check failed:", err)
     );
   });
 
-  // Monthly maintenance on the 1st at 6:00 AM
-  cron.schedule("0 6 1 * *", () => {
-    console.log("Running monthly maintenance...");
-    const entries = getAllBirthdays();
+  console.log(
+    `Scheduler: daily check at configured time, pre-scrape 1h before, pre-generate 30m before`
+  );
+}
 
-    scrapeAllMembers(client, true)
-      .then(() => {
-        console.log("Traits refreshed. Regenerating wishes...");
-        return regenerateMonthly(entries);
-      })
-      .then(() => console.log("Monthly maintenance complete"))
-      .catch((err: unknown) =>
-        console.error("Monthly maintenance failed:", err)
-      );
-  });
+function getTodayKey(): string {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${month}-${day}`;
+}
 
-  console.log("Scheduler started: daily check @ 7:00, monthly regen @ 6:00 on 1st");
+async function scrapeTodaysBirthdayUsers(client: Client): Promise<void> {
+  const todayKey = getTodayKey();
+  const entries = getAllBirthdays().filter((e) => e.birthday === todayKey);
+
+  for (const entry of entries) {
+    try {
+      await scrapeOneMember(client, entry.userId);
+      console.log(`  Scraped traits for ${entry.username}`);
+    } catch (err) {
+      console.error(`  Failed to scrape ${entry.username}:`, err);
+    }
+  }
+}
+
+async function generateTodaysWishes(client: Client): Promise<void> {
+  const todayKey = getTodayKey();
+  const entries = getAllBirthdays().filter((e) => e.birthday === todayKey);
+
+  for (const entry of entries) {
+    try {
+      const traits = getTraits(entry.userId).map((t) => t.trait);
+      const messages = buildMessages(entry.username, entry.birthday, traits);
+      const wish = await callLLM(messages);
+      const currentYear = new Date().getFullYear();
+      setWishCache(entry.userId, wish, currentYear);
+      console.log(`  Generated wish for ${entry.username}`);
+    } catch (err) {
+      console.error(`  Failed to generate wish for ${entry.username}:`, err);
+    }
+  }
 }
 
 export async function checkAndPostBirthdays(client: Client): Promise<void> {
@@ -69,10 +111,12 @@ export async function checkAndPostBirthdays(client: Client): Promise<void> {
     let wish = getWishCache(entry.userId, currentYear)?.wish;
 
     if (!wish) {
-      // Generate on the fly if cache miss (shouldn't happen with monthly regen,
-      // but safe fallback)
-      console.log(`Cache miss for ${entry.username}, generating on the fly...`);
+      // Cache miss: scrape + generate on-the-fly
+      console.log(`Cache miss for ${entry.username}, scraping + generating on the fly...`);
       try {
+        await scrapeOneMember(client, entry.userId).catch(
+          () => {} // best-effort — if scrape fails, use whatever traits exist
+        );
         const traits = getTraits(entry.userId).map((t) => t.trait);
         const messages = buildMessages(
           entry.username,

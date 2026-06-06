@@ -37,6 +37,33 @@ export function extractTraits(member: GuildMember): string[] {
 }
 
 /**
+ * Scrape a single member's profile. Removes old scraped traits
+ * and replaces them with fresh ones.
+ */
+export async function scrapeOneMember(
+  client: Client,
+  userId: string
+): Promise<void> {
+  const { guildId } = getDiscordConfig();
+  const guild = client.guilds.cache.get(guildId);
+  if (!guild) throw new Error(`Bot is not in guild ${guildId}`);
+
+  await guild.members.fetch();
+  const member = guild.members.cache.get(userId);
+  if (!member) {
+    console.warn(`Member ${userId} not found in guild, skipping scrape`);
+    return;
+  }
+  if (member.user.bot) return;
+
+  removeScrapedTraits(userId);
+  const traits = extractTraits(member);
+  for (const trait of traits) {
+    addTrait(userId, trait, "scraped");
+  }
+}
+
+/**
  * Scrape all members in the configured guild. Idempotent — skips
  * members who already have scraped traits, unless force=true.
  */

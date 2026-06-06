@@ -20,8 +20,8 @@ Dank, meme-heavy birthday wishes for a private Discord server (~20 people).
   - `/trigger` — manually run the daily birthday check (bot owner only)
   - `/update` — git pull + rebuild + restart (bot owner only)
   - `/help` — show all commands (also reply to any DM)
-- **Auto-scraped traits** — roles, nicknames, and join dates extracted from Discord profiles. Refreshed monthly before wish regeneration.
-- **Monthly maintenance** — on the 1st of each month: refresh traits → regenerate all wishes via DeepSeek.
+- **Auto-scraped traits** — roles, nicknames, and join dates extracted from Discord profiles. Scraped 1 hour before each user's birthday for fresh data.
+- **Just-in-time wish generation** — wishes are pre-generated 30 minutes before posting for today's birthdays only (not a monthly batch). Cache misses trigger on-the-fly scrape + generate.
 - **Birthday locking** — self-set birthdays can only be changed by the owner, a server admin, or the bot admin.
 - **Role-based access** — restrict write commands to specific Discord roles via `BOT_ADMIN_ROLE_ID` and `BOT_MEMBER_ROLE_ID`.
 - **Trait blocklist** — slurs and hate speech blocked from traits. Configurable via `BOT_TRAIT_BLOCKLIST`.
@@ -86,6 +86,16 @@ Check status:
 sudo systemctl status birthday-bot
 journalctl -u birthday-bot -f
 ```
+
+### Reset the database
+
+```bash
+sudo systemctl stop birthday-bot
+rm /root/discord-birthday-bot/data/birthdays.db
+sudo systemctl start birthday-bot
+```
+
+This wipes all birthdays, traits, and wish cache. The bot rebuilds the schema on startup and re-scrapes traits from Discord.
 
 ### 5. Seed the initial birthday list
 
