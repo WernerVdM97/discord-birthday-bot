@@ -16,13 +16,29 @@ const SYSTEM_PROMPT = `You are a Discord bot that posts birthday wishes in a pri
 
 Use the provided tags to personalize the roast.`;
 
+const AFRIKAANS_INDICATORS = ["afrikaans", "afr", "suid-afrika", "boer", "springbok"];
+
+function hasAfrikaansTags(tags: string[]): boolean {
+  const lower = tags.map((t) => t.toLowerCase());
+  return AFRIKAANS_INDICATORS.some((ind) => lower.some((t) => t.includes(ind)));
+}
+
 function buildUserPrompt(
   username: string,
   birthday: string,
   tags: string[]
 ): string {
   const tagList = tags.length > 0 ? tags.join(", ") : "no known tags";
-  return `${username}'s birthday is ${birthday}. Tags: ${tagList}. Write a short, dank birthday wish.`;
+  let prompt = `${username}'s birthday is ${birthday}. Tags: ${tagList}. Write a short, dank birthday wish.`;
+
+  if (hasAfrikaansTags(tags)) {
+    prompt += `\n\nLANGUAGE RULES:
+- Write the first sentence(s) in English, then follow with a separate sentence or two in Afrikaans.
+- Never mix English and Afrikaans inside the same sentence (no \"mengels\").
+- Keep each language's sentences together — English block first, Afrikaans block second.`;
+  }
+
+  return prompt;
 }
 
 export function buildMessages(
