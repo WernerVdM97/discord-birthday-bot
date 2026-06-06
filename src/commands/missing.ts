@@ -1,6 +1,6 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import { getAllBirthdays } from "../lib/db.js";
-import { isMemberOrAbove, isRoleGateActive } from "../lib/roles.js";
+import { isMemberOrAbove, isRoleGateActive, hasMemberRole } from "../lib/roles.js";
 
 /** Discord message limit is 2000 chars. Keep some padding. */
 const MAX_LENGTH = 1900;
@@ -50,6 +50,7 @@ export async function handleMissing(
   const missing: string[] = [];
   for (const [, member] of guild.members.cache) {
     if (member.user.bot) continue;
+    if (isRoleGateActive() && !hasMemberRole(member)) continue;
     if (!userIdsWithBirthdays.has(member.id)) {
       missing.push(member.displayName);
     }

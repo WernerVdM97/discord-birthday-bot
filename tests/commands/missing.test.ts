@@ -102,8 +102,14 @@ describe("handleMissing with role gate", () => {
   });
 
   it("allows member role to use missing", async () => {
+    const makeMember = (id: string, name: string) => ({
+      id,
+      displayName: name,
+      user: { bot: false },
+      roles: { cache: { has: (roleId: string) => roleId === "role-member" } },
+    });
     const membersCache = new Map([
-      ["u1", { id: "u1", displayName: "Alice", user: { bot: false } }],
+      ["u1", makeMember("u1", "Alice")],
     ]);
     const guild = {
       members: { fetch: vi.fn().mockResolvedValue(undefined), cache: membersCache },
