@@ -1,5 +1,7 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import { getAllBirthdays } from "../lib/db.js";
+import { isRoleGateActive, hasMemberRole } from "../lib/roles.js";
+import type { GuildMember } from "discord.js";
 
 const MAX_LENGTH = 1900;
 
@@ -11,7 +13,15 @@ const MONTHS = [
 export async function handleList(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
-  const entries = getAllBirthdays();
+  let entries = getAllBirthdays();
+
+  // When role gate is configured, only show members who have the admin or member role
+  if (isRoleGateActive() && interaction.guild) {
+    await interaction.guild.members.fetch();
+    entries = entries.filter((e) =>
+      hasMemberRole((interaction.guild!.members.cache.get(e.userId) as GuildMember) ?? null)
+    );
+  }
 
   if (entries.length === 0) {
     await interaction.reply({
