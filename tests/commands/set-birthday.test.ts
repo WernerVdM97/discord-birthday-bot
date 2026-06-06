@@ -4,6 +4,11 @@ import { initDb, getBirthday, isBirthdayLocked } from "../../src/lib/db.js";
 import { mockInteraction } from "./helpers.js";
 
 beforeEach(() => {
+  process.env["DISCORD_TOKEN"] = "mock";
+  process.env["DISCORD_APP_ID"] = "mock";
+  process.env["DISCORD_GUILD_ID"] = "mock";
+  process.env["ANNOUNCEMENTS_CHANNEL_ID"] = "mock";
+  delete process.env["BOT_ADMIN_ID"];
   initDb(":memory:");
 });
 
@@ -244,5 +249,29 @@ describe("handleSetBirthday", () => {
       })
     );
     expect(getBirthday("u1")!.birthday).toBe("03-14");
+  });
+
+  it("allows the bot admin to override a locked birthday", async () => {
+    process.env["BOT_ADMIN_ID"] = "admin-1";
+
+    // Alice sets her own → locked
+    await handleSetBirthday(
+      mockInteraction({
+        callerId: "u1",
+        user: { id: "u1", displayName: "Alice" },
+        date: "03-14",
+      })
+    );
+
+    // Bot admin changes it (no server admin perms, just the env var)
+    const adminUpdate = mockInteraction({
+      callerId: "admin-1",
+      isAdmin: false,
+      user: { id: "u1", displayName: "Alice" },
+      date: "09-09",
+    });
+    await handleSetBirthday(adminUpdate);
+
+    expect(getBirthday("u1")!.birthday).toBe("09-09");
   });
 });

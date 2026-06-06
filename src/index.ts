@@ -2,6 +2,7 @@ import { createClient, loginClient, registerCommands } from "./lib/discord.js";
 import { initDb } from "./lib/db.js";
 import { scrapeAllMembers } from "./lib/scraper.js";
 import { startScheduler } from "./scheduler/daily-check.js";
+import { notifyAdmin } from "./lib/notify.js";
 import { handleSetBirthday } from "./commands/set-birthday.js";
 import { handleSetTraits } from "./commands/set-traits.js";
 import { handleBirthday } from "./commands/birthday.js";
@@ -9,6 +10,15 @@ import { handleBirthdays } from "./commands/birthdays.js";
 import { handleUpcoming } from "./commands/upcoming.js";
 import { handleMissing } from "./commands/missing.js";
 import type { ChatInputCommandInteraction } from "discord.js";
+import { readFileSync } from "node:fs";
+
+function getCommitHash(): string {
+  try {
+    return readFileSync("dist/commit.txt", "utf-8").trim();
+  } catch {
+    return "unknown";
+  }
+}
 
 async function main(): Promise<void> {
   console.log("Birthday bot starting...");
@@ -52,6 +62,13 @@ async function main(): Promise<void> {
         `Error handling /${interaction.commandName}:`,
         err
       );
+
+      // Notify admin of the failure
+      notifyAdmin(
+        client,
+        `⚠️ Error in /${interaction.commandName}: ${String(err).slice(0, 300)}`
+      ).catch(() => {}); // fire-and-forget
+
       if (!interaction.replied && !interaction.deferred) {
         await interaction.reply({
           content: "Something went wrong. Try again later.",
@@ -74,6 +91,13 @@ async function main(): Promise<void> {
   startScheduler(client);
 
   console.log("Birthday bot is ready!");
+
+  // Notify admin on startup
+  const commit = getCommitHash();
+  await notifyAdmin(
+    client,
+    `🟢 Birthday bot online — commit \`${commit}\``
+  );
 }
 
 main().catch((err) => {
