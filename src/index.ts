@@ -9,6 +9,7 @@ import { handleBirthday } from "./commands/birthday.js";
 import { handleBirthdays } from "./commands/birthdays.js";
 import { handleUpcoming } from "./commands/upcoming.js";
 import { handleMissing } from "./commands/missing.js";
+import { HELP_TEXT } from "./commands/help.js";
 import type { ChatInputCommandInteraction } from "discord.js";
 import { readFileSync } from "node:fs";
 
@@ -44,6 +45,9 @@ async function main(): Promise<void> {
       birthdays: handleBirthdays,
       upcoming: handleUpcoming,
       missing: handleMissing,
+      help: async (i) => {
+        await i.reply({ content: HELP_TEXT, ephemeral: true });
+      },
     };
 
     const handler = handlers[interaction.commandName];
@@ -74,6 +78,19 @@ async function main(): Promise<void> {
           content: "Something went wrong. Try again later.",
           ephemeral: true,
         });
+      }
+    }
+  });
+
+  // DM auto-responder: reply with command list when messaged directly
+  client.on("messageCreate", async (message) => {
+    if (message.author.bot) return;
+    if (!message.guild) {
+      // DM — not in a server
+      try {
+        await message.reply(HELP_TEXT);
+      } catch {
+        // User might have DMs disabled
       }
     }
   });

@@ -9,7 +9,11 @@ import { getDiscordConfig } from "./config.js";
 
 export function createClient(): Client {
   const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMembers,
+      GatewayIntentBits.DirectMessages,
+    ],
   });
 
   client.once("ready", () => {
@@ -76,6 +80,9 @@ export async function registerCommands(client: Client): Promise<void> {
     new SlashCommandBuilder()
       .setName("missing")
       .setDescription("List server members whose birthdays haven't been set"),
+    new SlashCommandBuilder()
+      .setName("help")
+      .setDescription("Show all available commands"),
   ];
 
   const rest = new REST({ version: "10" }).setToken(token);
