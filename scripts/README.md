@@ -5,6 +5,7 @@
 | Script | Input | Usage |
 |---|---|---|
 | `seed.ts` | `seed.json` (Discord snowflakes) | `npx tsx scripts/seed.ts` — manual IDs, no matching |
+| `seed-csv.ts` | `seed.csv` (username,MM-DD) | `npx tsx scripts/seed-csv.ts` — spreadsheet-friendly, auto-matches display names |
 
 Requires the bot to be stopped first:
 ```bash
