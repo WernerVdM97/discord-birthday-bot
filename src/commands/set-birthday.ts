@@ -9,6 +9,7 @@ export async function handleSetBirthday(
   const target = interaction.options.getUser("user", true);
   const date = interaction.options.getString("date", true);
   const isSelf = callerId === target.id;
+  const privileged = isPrivileged(interaction);
 
   // Validate MM-DD format
   if (!/^\d{2}-\d{2}$/.test(date)) {
@@ -32,7 +33,6 @@ export async function handleSetBirthday(
   }
 
   if (isRoleGateActive()) {
-    const privileged = isPrivileged(interaction);
     const member = isMemberOrAbove(interaction);
 
     if (!privileged && !member) {
@@ -61,8 +61,7 @@ export async function handleSetBirthday(
       return;
     }
   } else {
-    // No role gate: existing behavior — lock override for owner/server-admin/bot-admin
-    const privileged = isPrivileged(interaction);
+    // No role gate: lock override for privileged users
     if (isBirthdayLocked(target.id) && !isSelf && !privileged) {
       await interaction.reply({
         content: `**${target.displayName}**'s birthday is locked and can only be changed by them (or an admin).`,
@@ -72,7 +71,7 @@ export async function handleSetBirthday(
     }
   }
 
-  // Self-set → lock; privileged setting for someone else → unlocked
+  // Self-set → always lock (everyone, including bot admin)
   upsertBirthday(target.id, target.displayName, date, isSelf);
 
   const lockNotice = isSelf ? " 🔒 (locked)" : "";

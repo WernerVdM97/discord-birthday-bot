@@ -23,8 +23,8 @@ Dank, meme-heavy birthday wishes for a private Discord server (~20 people).
   - `/help` — show all commands (also reply to any DM)
 - **Auto-scraped traits** — roles, nicknames, and join dates extracted from Discord profiles. Scraped 1 hour before each user's birthday for fresh data.
 - **Just-in-time wish generation** — wishes are pre-generated 30 minutes before posting for today's birthdays only (not a monthly batch). Cache misses trigger on-the-fly scrape + generate.
-- **Birthday locking** — self-set birthdays can only be changed by the owner, a server admin, or the bot admin.
-- **Role-based access** — restrict write commands to specific Discord roles via `BOT_ADMIN_ROLE_ID` and `BOT_MEMBER_ROLE_ID`.
+- **Birthday locking** — self-set birthdays always lock. Only the owner, bot admin, admin role, or server admin can override a lock. Members can only set their own unlocked birthday.
+- **Role-based access** — restrict write commands via `BOT_ADMIN_ROLE_ID` and `BOT_MEMBER_ROLE_ID`. Admins: full control. Members: own birthday + traits only.
 - **Trait blocklist** — slurs and hate speech blocked from traits. Configurable via `BOT_TRAIT_BLOCKLIST`.
 - **Admin notifications** — DM on startup (with commit hash) and on unhandled errors when `BOT_ADMIN_ID` is set.
 - **Auto-deployment** — Pi polls GitHub every 5 min for new commits on `main`, pulls, builds, restarts. Or use `/update` in Discord.
@@ -120,16 +120,16 @@ Or add one at a time with slash commands once the bot is online:
 | `DISCORD_APP_ID` | Application ID from General Information |
 | `DISCORD_GUILD_ID` | Your server's ID (right-click server → Copy ID) |
 | `ANNOUNCEMENTS_CHANNEL_ID` | Channel ID for birthday posts |
-| `BOT_ADMIN_ID` | (Optional) Your Discord user ID — gets DM notifications on startup/errors, can override locked birthdays, and use `/trigger` `/update` `/test-birthday` |
-| `BOT_ADMIN_ROLE_ID` | (Optional) Discord role ID for admins — can set any birthday, manage traits, override locks |
-| `BOT_MEMBER_ROLE_ID` | (Optional) Discord role ID for members — can set their own birthday and add traits |
+| `BOT_ADMIN_ID` | (Optional) Your Discord user ID — gets DM notifications, can override locks, use bot-owner commands (`/trigger` `/update` `/test-birthday`) |
+| `BOT_ADMIN_ROLE_ID` | (Optional) Discord role ID for admins — can set any birthday, override locks, manage all traits |
+| `BOT_MEMBER_ROLE_ID` | (Optional) Discord role ID for members — can set own birthday (locks) and add traits. Cannot override locks. |
 | `DEEPSEEK_API_KEY` | DeepSeek API key |
 | `CRON_SCHEDULE` | (Optional) Cron expression for the daily check — defaults to `0 7 * * *` (7am) |
 | `BOT_TRAIT_BLOCKLIST` | (Optional) Comma-separated blocked substrings for traits (defaults to common slurs) |
 
 > **Getting role IDs:** Enable Developer Mode in Discord (Settings → Advanced). Then go to Server Settings → Roles → right-click the role → Copy ID.
 >
-> If no role IDs are set, all commands are open to everyone. When set, write commands require at least the member role, and admin commands require the admin role.
+> If no role IDs are set, all commands are open to everyone. When set, write commands require at least the member role, and admin/trait-management commands require the admin role or bot owner.
 
 ## Development
 
