@@ -1,0 +1,5 @@
+[
+  { "username": "Alice",   "userId": "PUT_DISCORD_SNOWFLAKE_HERE",  "birthday": "03-14", "locked": true },
+  { "username": "Bob",     "userId": "PUT_DISCORD_SNOWFLAKE_HERE",  "birthday": "12-25", "locked": false },
+  { "username": "Carol",   "userId": "PUT_DISCORD_SNOWFLAKE_HERE",  "birthday": "07-04", "locked": false }
+]
