@@ -1,6 +1,11 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import { getAllBirthdays } from "../lib/db.js";
 
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
 function parseMMDD(mmdd: string): { month: number; day: number } {
   return {
     month: parseInt(mmdd.slice(0, 2), 10),
@@ -9,10 +14,8 @@ function parseMMDD(mmdd: string): { month: number; day: number } {
 }
 
 function daysUntil(now: Date, target: { month: number; day: number }): number {
-  // First try this year
   let targetDate = new Date(now.getFullYear(), target.month - 1, target.day);
 
-  // If already past (or today), try next year
   if (
     targetDate.getMonth() < now.getMonth() ||
     (targetDate.getMonth() === now.getMonth() &&
@@ -40,7 +43,6 @@ export async function handleNext(
 
   const now = new Date();
 
-  // Find entries with the minimum days-until
   let minDays = Infinity;
   const upcoming: typeof entries = [];
 
@@ -55,20 +57,28 @@ export async function handleNext(
     }
   }
 
-  const names = upcoming.map((e) => `**${e.username}**`).join(", ");
+  const { month, day } = parseMMDD(upcoming[0]!.birthday);
+  const dateLabel = `${MONTHS[month - 1]} ${day}`;
 
-  let when: string;
+  let header: string;
   if (minDays === 0) {
-    when = "today 🎉";
+    header = `🎉 **Today! ${dateLabel}**`;
   } else if (minDays === 1) {
-    when = "tomorrow";
+    header = `📅 **Tomorrow: ${dateLabel}**`;
   } else {
-    when = `in ${minDays} days`;
+    header = `📅 **${dateLabel}** (in ${minDays} days)`;
   }
 
-  const date = upcoming[0]!.birthday;
+  const lines = upcoming.map(
+    (e) => `• ${e.tagEmoji} **${e.username}**`
+  );
+
+  const suffix = upcoming.length > 1
+    ? `\n_${upcoming.length} birthdays on this day_`
+    : "";
+
   await interaction.reply({
-    content: `Next up: ${names} — **${date}** (${when})`,
+    content: `${header}\n${lines.join("\n")}${suffix}`,
     ephemeral: true,
   });
 }
