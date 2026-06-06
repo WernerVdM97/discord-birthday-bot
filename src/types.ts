@@ -3,6 +3,7 @@ export interface Birthday {
   username: string;
   birthday: string; // 'MM-DD'
   locked: boolean;
+  traitEmoji: string;
   updatedAt: string; // ISO timestamp
 }
 

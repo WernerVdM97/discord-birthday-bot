@@ -24,6 +24,7 @@ export function initDb(path: string = "data/birthdays.db"): void {
       username    TEXT NOT NULL,
       birthday    TEXT NOT NULL,
       locked      INTEGER NOT NULL DEFAULT 0,
+      trait_emoji TEXT NOT NULL DEFAULT '🎂',
       updated_at  TEXT NOT NULL
     );
 
@@ -41,6 +42,15 @@ export function initDb(path: string = "data/birthdays.db"): void {
       generated_at  TEXT NOT NULL
     );
   `);
+
+  // Migration: add trait_emoji column
+  try {
+    db.exec(
+      "ALTER TABLE birthdays ADD COLUMN trait_emoji TEXT NOT NULL DEFAULT '🎂'"
+    );
+  } catch {
+    // Column already exists
+  }
 
   // Migration: add locked column if upgrading from schema without it
   try {
@@ -60,6 +70,7 @@ function mapBirthday(row: Record<string, unknown>): Birthday {
     username: row["username"] as string,
     birthday: row["birthday"] as string,
     locked: (row["locked"] as number) === 1,
+    traitEmoji: (row["trait_emoji"] as string) ?? "🎂",
     updatedAt: row["updated_at"] as string,
   };
 }
@@ -113,19 +124,27 @@ export function upsertBirthday(
   userId: string,
   username: string,
   birthday: string,
-  locked: boolean = false
+  locked: boolean = false,
+  traitEmoji: string = "🎂"
 ): void {
   getDb()
     .prepare(
-      `INSERT INTO birthdays (user_id, username, birthday, locked, updated_at)
-       VALUES (?, ?, ?, ?, ?)
+      `INSERT INTO birthdays (user_id, username, birthday, locked, trait_emoji, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)
        ON CONFLICT(user_id) DO UPDATE SET
          username = excluded.username,
          birthday = excluded.birthday,
          locked = excluded.locked,
+         trait_emoji = excluded.trait_emoji,
          updated_at = excluded.updated_at`
     )
-    .run(userId, username, birthday, locked ? 1 : 0, new Date().toISOString());
+    .run(userId, username, birthday, locked ? 1 : 0, traitEmoji, new Date().toISOString());
+}
+
+export function setTraitEmoji(userId: string, emoji: string): void {
+  getDb()
+    .prepare("UPDATE birthdays SET trait_emoji = ? WHERE user_id = ?")
+    .run(emoji, userId);
 }
 
 export function isBirthdayLocked(userId: string): boolean {

@@ -1,8 +1,9 @@
 import type { Client, TextChannel } from "discord.js";
 import cron from "node-cron";
 import { getDiscordConfig } from "../lib/config.js";
-import { getAllBirthdays, getWishCache, getTraits, setWishCache } from "../lib/db.js";
+import { getAllBirthdays, getWishCache, getTraits, setWishCache, setTraitEmoji } from "../lib/db.js";
 import { scrapeOneMember } from "../lib/scraper.js";
+import { generateTraitEmoji } from "../lib/emoji.js";
 import { notifyAdmin } from "../lib/notify.js";
 import { callLLM, buildMessages } from "../lib/llm.js";
 
@@ -82,6 +83,15 @@ async function generateTodaysWishes(client: Client): Promise<void> {
       const wish = await callLLM(messages);
       const currentYear = new Date().getFullYear();
       setWishCache(entry.userId, wish, currentYear);
+
+      // Also refresh trait emoji for today's birthday users
+      try {
+        const emoji = await generateTraitEmoji(traits);
+        setTraitEmoji(entry.userId, emoji);
+      } catch {
+        // Emoji refresh is best-effort
+      }
+
       console.log(`  Generated wish for ${entry.username}`);
     } catch (err) {
       console.error(`  Failed to generate wish for ${entry.username}:`, err);

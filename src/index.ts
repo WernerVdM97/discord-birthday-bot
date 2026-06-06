@@ -17,6 +17,7 @@ import { handleTestBirthday } from "./commands/test-birthday.js";
 import { handleUpdate } from "./commands/update.js";
 import { handleTrigger } from "./commands/trigger.js";
 import { handleNext } from "./commands/next.js";
+import { handleRefreshEmojis } from "./commands/refresh-emojis.js";
 import type { ChatInputCommandInteraction } from "discord.js";
 import { readFileSync } from "node:fs";
 
@@ -58,6 +59,7 @@ async function main(): Promise<void> {
       update: handleUpdate,
       trigger: handleTrigger,
       next: handleNext,
+      "refresh-emojis": handleRefreshEmojis,
       help: async (i) => {
         await i.reply({ content: buildHelpText(), ephemeral: true });
       },

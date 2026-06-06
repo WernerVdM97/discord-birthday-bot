@@ -140,6 +140,9 @@ export async function registerCommands(client: Client): Promise<void> {
           .setDescription("The user")
           .setRequired(true)
       ),
+    new SlashCommandBuilder()
+      .setName("refresh-emojis")
+      .setDescription("Regenerate trait emojis for everyone (admin only)"),
   ];
 
   const rest = new REST({ version: "10" }).setToken(token);
