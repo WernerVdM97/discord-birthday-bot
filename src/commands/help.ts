@@ -14,11 +14,13 @@ export function buildHelpText(): string {
   return `**Birthday Bot commands:**
 
 \`/birthday @user\` — Look up someone's birthday
-\`/birthdays\` — List all stored birthdays (🔒 = locked)
+\`/list\` — List all stored birthdays (🔒 = locked)
 \`/upcoming\` — Birthdays this month
 \`/set-birthday @user MM-DD\` — Add or update a birthday
 \`/set-traits @user trait1, trait2\` — Tag someone for roasting
 \`/missing\` — List members without birthdays
+\`/test-birthday @user\` — Preview a wish (bot owner only)
+\`/update\` — Pull latest code and restart (bot owner only)
 \`/help\` — Show this list
 
 \`${commit}\``;

@@ -42,7 +42,7 @@ export async function registerCommands(client: Client): Promise<void> {
           .setRequired(true)
       ),
     new SlashCommandBuilder()
-      .setName("birthdays")
+      .setName("list")
       .setDescription("List all stored birthdays"),
     new SlashCommandBuilder()
       .setName("upcoming")
@@ -81,8 +81,20 @@ export async function registerCommands(client: Client): Promise<void> {
       .setName("missing")
       .setDescription("List server members whose birthdays haven't been set"),
     new SlashCommandBuilder()
+      .setName("update")
+      .setDescription("Pull latest code and restart the bot (bot owner only)"),
+    new SlashCommandBuilder()
       .setName("help")
       .setDescription("Show all available commands"),
+    new SlashCommandBuilder()
+      .setName("test-birthday")
+      .setDescription("Preview a birthday wish (admin only)")
+      .addUserOption((opt) =>
+        opt
+          .setName("user")
+          .setDescription("The user")
+          .setRequired(true)
+      ),
   ];
 
   const rest = new REST({ version: "10" }).setToken(token);

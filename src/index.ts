@@ -7,9 +7,11 @@ import { buildHelpText } from "./commands/help.js";
 import { handleSetBirthday } from "./commands/set-birthday.js";
 import { handleSetTraits } from "./commands/set-traits.js";
 import { handleBirthday } from "./commands/birthday.js";
-import { handleBirthdays } from "./commands/birthdays.js";
+import { handleList } from "./commands/list.js";
 import { handleUpcoming } from "./commands/upcoming.js";
 import { handleMissing } from "./commands/missing.js";
+import { handleTestBirthday } from "./commands/test-birthday.js";
+import { handleUpdate } from "./commands/update.js";
 import type { ChatInputCommandInteraction } from "discord.js";
 import { readFileSync } from "node:fs";
 
@@ -40,9 +42,11 @@ async function main(): Promise<void> {
       "set-birthday": handleSetBirthday,
       "set-traits": handleSetTraits,
       birthday: handleBirthday,
-      birthdays: handleBirthdays,
+      list: handleList,
       upcoming: handleUpcoming,
       missing: handleMissing,
+      "test-birthday": handleTestBirthday,
+      update: handleUpdate,
       help: async (i) => {
         await i.reply({ content: buildHelpText(), ephemeral: true });
       },
