@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-PROJECT_DIR="/home/pi/discord-birthday-bot"
+PROJECT_DIR="/root/discord-birthday-bot"
 SERVICE_NAME="birthday-bot"
 
 cd "$PROJECT_DIR"
