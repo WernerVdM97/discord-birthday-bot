@@ -1,7 +1,8 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import { isPrivileged } from "../lib/roles.js";
-import { getAllBirthdays, getTraits, setTraitEmoji } from "../lib/db.js";
-import { generateTraitEmoji } from "../lib/emoji.js";
+import { getAllBirthdays, getTags, setTagEmoji } from "../lib/db.js";
+import { generateTagEmoji } from "../lib/emoji.js";
+import { scrapeOneMember } from "../lib/scraper.js";
 
 export async function handleRefreshEmojis(
   interaction: ChatInputCommandInteraction
@@ -22,9 +23,12 @@ export async function handleRefreshEmojis(
 
   for (const entry of entries) {
     try {
-      const traits = getTraits(entry.userId).map((t) => t.trait);
-      const emoji = await generateTraitEmoji(traits);
-      setTraitEmoji(entry.userId, emoji);
+      // Re-scrape to get fresh tags (nickname, roles, etc.)
+      await scrapeOneMember(interaction.client, entry.userId).catch(() => {});
+
+      const tags = getTags(entry.userId).map((t) => t.tag);
+      const emoji = await generateTagEmoji(tags);
+      setTagEmoji(entry.userId, emoji);
       updated++;
     } catch {
       failed++;

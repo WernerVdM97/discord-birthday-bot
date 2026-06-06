@@ -1,6 +1,6 @@
 import { getLLMConfig } from "./config.js";
 import type { Birthday } from "../types.js";
-import { getTraits, getWishCache, setWishCache } from "./db.js";
+import { getTags, getWishCache, setWishCache } from "./db.js";
 
 interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -14,25 +14,25 @@ const SYSTEM_PROMPT = `You are a Discord bot that posts birthday wishes in a pri
 - Include 1-2 emojis, placed naturally — don't overdo it
 - Never cruel, never personal attacks, never genuinely hurtful
 
-Use the provided traits to personalize the roast.`;
+Use the provided tags to personalize the roast.`;
 
 function buildUserPrompt(
   username: string,
   birthday: string,
-  traits: string[]
+  tags: string[]
 ): string {
-  const traitList = traits.length > 0 ? traits.join(", ") : "no known traits";
-  return `${username}'s birthday is ${birthday}. Traits: ${traitList}. Write a short, dank birthday wish.`;
+  const tagList = tags.length > 0 ? tags.join(", ") : "no known tags";
+  return `${username}'s birthday is ${birthday}. Tags: ${tagList}. Write a short, dank birthday wish.`;
 }
 
 export function buildMessages(
   username: string,
   birthday: string,
-  traits: string[]
+  tags: string[]
 ): ChatMessage[] {
   return [
     { role: "system", content: SYSTEM_PROMPT },
-    { role: "user", content: buildUserPrompt(username, birthday, traits) },
+    { role: "user", content: buildUserPrompt(username, birthday, tags) },
   ];
 }
 
@@ -90,11 +90,11 @@ export async function generateWishes(
       continue;
     }
 
-    const traits = getTraits(entry.userId).map((t) => t.trait);
+    const tags = getTags(entry.userId).map((t) => t.tag);
     const messages = buildMessages(
       entry.username,
       entry.birthday,
-      traits
+      tags
     );
 
     try {
@@ -125,11 +125,11 @@ export async function regenerateMonthly(
   const wishes = new Map<string, string>();
 
   for (const entry of entries) {
-    const traits = getTraits(entry.userId).map((t) => t.trait);
+    const tags = getTags(entry.userId).map((t) => t.tag);
     const messages = buildMessages(
       entry.username,
       entry.birthday,
-      traits
+      tags
     );
 
     try {

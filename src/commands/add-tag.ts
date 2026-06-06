@@ -1,43 +1,43 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { addTrait } from "../lib/db.js";
+import { addTag } from "../lib/db.js";
 import { isMemberOrAbove, isRoleGateActive } from "../lib/roles.js";
-import { findBlockedTrait } from "../lib/blocklist.js";
+import { findBlockedTag } from "../lib/blocklist.js";
 
-export async function handleAddTrait(
+export async function handleAddTag(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
   if (isRoleGateActive() && !isMemberOrAbove(interaction)) {
     await interaction.reply({
-      content: "You don't have permission to add traits.",
+      content: "You don't have permission to add tags.",
       ephemeral: true,
     });
     return;
   }
 
   const user = interaction.options.getUser("user", true);
-  const trait = interaction.options.getString("trait", true).trim();
+  const tag = interaction.options.getString("tag", true).trim();
 
-  if (!trait) {
+  if (!tag) {
     await interaction.reply({
-      content: "Provide a trait to add.",
+      content: "Provide a tag to add.",
       ephemeral: true,
     });
     return;
   }
 
-  const blocked = findBlockedTrait([trait]);
+  const blocked = findBlockedTag([tag]);
   if (blocked) {
     await interaction.reply({
-      content: `Trait \"${blocked}\" is not allowed.`,
+      content: `Tag \"${blocked}\" is not allowed.`,
       ephemeral: true,
     });
     return;
   }
 
-  addTrait(user.id, trait, "manual");
+  addTag(user.id, tag, "manual");
 
   await interaction.reply({
-    content: `Added \"${trait}\" to **${user.displayName}**.`,
+    content: `Added \"${tag}\" to **${user.displayName}**.`,
     ephemeral: true,
   });
 }

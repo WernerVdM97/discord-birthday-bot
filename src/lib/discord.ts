@@ -48,20 +48,20 @@ export async function registerCommands(client: Client): Promise<void> {
       .setName("upcoming")
       .setDescription("List birthdays in the current month"),
     new SlashCommandBuilder()
-      .setName("trait-remove")
-      .setDescription("Remove a specific trait from a user (admin only)")
+      .setName("tag-remove")
+      .setDescription("Remove a specific tag from a user (admin only)")
       .addUserOption((opt) =>
         opt.setName("user").setDescription("The user").setRequired(true)
       )
       .addStringOption((opt) =>
         opt
-          .setName("trait")
-          .setDescription("Trait to remove")
+          .setName("tag")
+          .setDescription("Tag to remove")
           .setRequired(true)
       ),
     new SlashCommandBuilder()
-      .setName("traits-clear")
-      .setDescription("Clear all manual traits for a user (admin only)")
+      .setName("tags-clear")
+      .setDescription("Clear all manual tags for a user (admin only)")
       .addUserOption((opt) =>
         opt.setName("user").setDescription("The user").setRequired(true)
       ),
@@ -81,8 +81,8 @@ export async function registerCommands(client: Client): Promise<void> {
           .setRequired(true)
       ),
     new SlashCommandBuilder()
-      .setName("traits")
-      .setDescription("Show traits for a user")
+      .setName("tags")
+      .setDescription("Show tags for a user")
       .addUserOption((opt) =>
         opt
           .setName("user")
@@ -90,20 +90,20 @@ export async function registerCommands(client: Client): Promise<void> {
           .setRequired(true)
       ),
     new SlashCommandBuilder()
-      .setName("add-trait")
-      .setDescription("Add a single trait")
+      .setName("add-tag")
+      .setDescription("Add a single tag")
       .addUserOption((opt) =>
         opt.setName("user").setDescription("The user").setRequired(true)
       )
       .addStringOption((opt) =>
         opt
-          .setName("trait")
-          .setDescription("Trait to add")
+          .setName("tag")
+          .setDescription("Tag to add")
           .setRequired(true)
       ),
     new SlashCommandBuilder()
-      .setName("set-traits")
-      .setDescription("Add trait tags for a user (replaces any previous manual traits)")
+      .setName("set-tags")
+      .setDescription("Add manual tags for a user (replaces any previous manual tags)")
       .addUserOption((opt) =>
         opt
           .setName("user")
@@ -112,8 +112,8 @@ export async function registerCommands(client: Client): Promise<void> {
       )
       .addStringOption((opt) =>
         opt
-          .setName("traits")
-          .setDescription("Comma-separated traits (e.g. admin,meme lord)")
+          .setName("tags")
+          .setDescription("Comma-separated tags (e.g. admin,meme lord)")
           .setRequired(true)
       ),
     new SlashCommandBuilder()
@@ -142,7 +142,7 @@ export async function registerCommands(client: Client): Promise<void> {
       ),
     new SlashCommandBuilder()
       .setName("refresh-emojis")
-      .setDescription("Regenerate trait emojis for everyone (admin only)"),
+      .setDescription("Regenerate tag emojis for everyone (admin only)"),
   ];
 
   const rest = new REST({ version: "10" }).setToken(token);

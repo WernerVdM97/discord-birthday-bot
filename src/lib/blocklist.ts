@@ -1,9 +1,9 @@
 /**
- * Blocklist of prohibited substrings for traits.
+ * Blocklist of prohibited substrings for tags.
  * Matches case-insensitive. Covers slurs and hate speech.
  * Swearwords (fuck, shit, etc.) are NOT blocked — the bot is dank.
  *
- * Extend via BOT_TRAIT_BLOCKLIST in .env (comma-separated substrings).
+ * Extend via BOT_TAG_BLOCKLIST in .env (comma-separated substrings).
  */
 
 const DEFAULT_BLOCKLIST = [
@@ -19,7 +19,7 @@ const DEFAULT_BLOCKLIST = [
 ];
 
 export function getBlocklist(): RegExp[] {
-  const env = process.env["BOT_TRAIT_BLOCKLIST"];
+  const env = process.env["BOT_TAG_BLOCKLIST"];
   const extras = env
     ? env.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean)
     : [];
@@ -31,12 +31,12 @@ export function getBlocklist(): RegExp[] {
 /**
  * Returns the first blocked term found, or null if clean.
  */
-export function findBlockedTrait(traits: string[]): string | null {
+export function findBlockedTag(tags: string[]): string | null {
   const patterns = getBlocklist();
-  for (const trait of traits) {
-    const lower = trait.toLowerCase();
+  for (const tag of tags) {
+    const lower = tag.toLowerCase();
     for (const pattern of patterns) {
-      if (pattern.test(lower)) return trait;
+      if (pattern.test(lower)) return tag;
     }
   }
   return null;

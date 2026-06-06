@@ -1,9 +1,9 @@
 import type { Client, TextChannel } from "discord.js";
 import cron from "node-cron";
 import { getDiscordConfig } from "../lib/config.js";
-import { getAllBirthdays, getWishCache, getTraits, setWishCache, setTraitEmoji } from "../lib/db.js";
+import { getAllBirthdays, getWishCache, getTags, setWishCache, setTagEmoji } from "../lib/db.js";
 import { scrapeOneMember } from "../lib/scraper.js";
-import { generateTraitEmoji } from "../lib/emoji.js";
+import { generateTagEmoji } from "../lib/emoji.js";
 import { notifyAdmin } from "../lib/notify.js";
 import { callLLM, buildMessages } from "../lib/llm.js";
 
@@ -16,7 +16,7 @@ export function startScheduler(client: Client): void {
 
   // 1 hour before post: scrape today's birthday users only
   cron.schedule(`0 ${postHour - 1} * * *`, () => {
-    console.log(`Pre-scraping traits for today's birthdays...`);
+    console.log(`Pre-scraping tags for today's birthdays...`);
     scrapeTodaysBirthdayUsers(client).catch((err: unknown) => {
       console.error("Pre-scrape failed:", err);
       notifyAdmin(
@@ -65,7 +65,7 @@ async function scrapeTodaysBirthdayUsers(client: Client): Promise<void> {
   for (const entry of entries) {
     try {
       await scrapeOneMember(client, entry.userId);
-      console.log(`  Scraped traits for ${entry.username}`);
+      console.log(`  Scraped tags for ${entry.username}`);
     } catch (err) {
       console.error(`  Failed to scrape ${entry.username}:`, err);
     }
@@ -78,16 +78,19 @@ async function generateTodaysWishes(client: Client): Promise<void> {
 
   for (const entry of entries) {
     try {
-      const traits = getTraits(entry.userId).map((t) => t.trait);
-      const messages = buildMessages(entry.username, entry.birthday, traits);
+      // Refresh tags before generating, so nickname is current
+      await scrapeOneMember(client, entry.userId).catch(() => {});
+
+      const tags = getTags(entry.userId).map((t) => t.tag);
+      const messages = buildMessages(entry.username, entry.birthday, tags);
       const wish = await callLLM(messages);
       const currentYear = new Date().getFullYear();
       setWishCache(entry.userId, wish, currentYear);
 
-      // Also refresh trait emoji for today's birthday users
+      // Also refresh tag emoji for today's birthday users
       try {
-        const emoji = await generateTraitEmoji(traits);
-        setTraitEmoji(entry.userId, emoji);
+        const emoji = await generateTagEmoji(tags);
+        setTagEmoji(entry.userId, emoji);
       } catch {
         // Emoji refresh is best-effort
       }
@@ -138,13 +141,13 @@ export async function checkAndPostBirthdays(client: Client): Promise<void> {
       console.log(`Cache miss for ${entry.username}, scraping + generating on the fly...`);
       try {
         await scrapeOneMember(client, entry.userId).catch(
-          () => {} // best-effort — if scrape fails, use whatever traits exist
+          () => {} // best-effort — if scrape fails, use whatever tags exist
         );
-        const traits = getTraits(entry.userId).map((t) => t.trait);
+        const tags = getTags(entry.userId).map((t) => t.tag);
         const messages = buildMessages(
           entry.username,
           entry.birthday,
-          traits
+          tags
         );
         wish = await callLLM(messages);
       } catch (err) {

@@ -3,13 +3,13 @@ export interface Birthday {
   username: string;
   birthday: string; // 'MM-DD'
   locked: boolean;
-  traitEmoji: string;
+  tagEmoji: string;
   updatedAt: string; // ISO timestamp
 }
 
-export interface Trait {
+export interface Tag {
   userId: string;
-  trait: string;
+  tag: string;
   source: "scraped" | "manual";
 }
 

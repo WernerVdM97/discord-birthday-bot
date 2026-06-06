@@ -54,7 +54,7 @@ export function isPrivileged(
 }
 
 /**
- * True if the caller is at least a member (can set traits, set own birthday).
+ * True if the caller is at least a member (can set tags, set own birthday).
  * Privileged users are also members.
  */
 export function isMemberOrAbove(

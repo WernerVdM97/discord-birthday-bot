@@ -32,9 +32,9 @@ export async function handleList(
     let line: string;
     if (showLocks) {
       const lock = e.locked ? "🔒" : "🔓";
-      line = `${lock} **${day}** ${e.traitEmoji} **${e.username}**`;
+      line = `${lock} **${day}** ${e.tagEmoji} **${e.username}**`;
     } else {
-      line = `**${day}** ${e.traitEmoji} **${e.username}**`;
+      line = `**${day}** ${e.tagEmoji} **${e.username}**`;
     }
 
     const existing = groups.get(month) ?? [];

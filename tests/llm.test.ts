@@ -4,7 +4,7 @@ import {
   generateWishes,
   regenerateMonthly,
 } from "../src/lib/llm.js";
-import { initDb, upsertBirthday, addTrait, getWishCache } from "../src/lib/db.js";
+import { initDb, upsertBirthday, addTag, getWishCache } from "../src/lib/db.js";
 
 beforeEach(() => {
   process.env["DEEPSEEK_API_KEY"] = "sk-test";
@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 describe("buildMessages", () => {
-  it("includes system prompt and user traits", () => {
+  it("includes system prompt and user tags", () => {
     const messages = buildMessages("Alice", "03-14", ["admin", "memelord"]);
 
     expect(messages).toHaveLength(2);
@@ -27,9 +27,9 @@ describe("buildMessages", () => {
     expect(messages[1].content).toContain("memelord");
   });
 
-  it("handles empty traits", () => {
+  it("handles empty tags", () => {
     const messages = buildMessages("Bob", "12-25", []);
-    expect(messages[1].content).toContain("no known traits");
+    expect(messages[1].content).toContain("no known tags");
   });
 });
 
@@ -46,7 +46,7 @@ describe("generateWishes", () => {
     vi.stubGlobal("fetch", mockFetch);
 
     upsertBirthday("u1", "Alice", "03-14");
-    addTrait("u1", "admin", "scraped");
+    addTag("u1", "admin", "scraped");
 
     const entries = [{ userId: "u1", username: "Alice", birthday: "03-14", updatedAt: "" }];
     const wishes = await generateWishes(entries);

@@ -5,14 +5,14 @@ import { startScheduler } from "./scheduler/daily-check.js";
 import { notifyAdmin } from "./lib/notify.js";
 import { buildHelpText } from "./commands/help.js";
 import { handleSetBirthday } from "./commands/set-birthday.js";
-import { handleSetTraits } from "./commands/set-traits.js";
+import { handleSetTags } from "./commands/set-tags.js";
 import { handleBirthday } from "./commands/birthday.js";
 import { handleList } from "./commands/list.js";
 import { handleUpcoming } from "./commands/upcoming.js";
 import { handleMissing } from "./commands/missing.js";
-import { handleTraits } from "./commands/traits.js";
-import { handleTraitRemove, handleTraitsClear } from "./commands/trait-remove.js";
-import { handleAddTrait } from "./commands/add-trait.js";
+import { handleTags } from "./commands/tags.js";
+import { handleTagRemove, handleTagsClear } from "./commands/tag-remove.js";
+import { handleAddTag } from "./commands/add-tag.js";
 import { handleTestBirthday } from "./commands/test-birthday.js";
 import { handleUpdate } from "./commands/update.js";
 import { handleTrigger } from "./commands/trigger.js";
@@ -46,11 +46,11 @@ async function main(): Promise<void> {
       (i: ChatInputCommandInteraction) => Promise<void>
     > = {
       "set-birthday": handleSetBirthday,
-      traits: handleTraits,
-      "add-trait": handleAddTrait,
-      "trait-remove": handleTraitRemove,
-      "traits-clear": handleTraitsClear,
-      "set-traits": handleSetTraits,
+      tags: handleTags,
+      "add-tag": handleAddTag,
+      "tag-remove": handleTagRemove,
+      "tags-clear": handleTagsClear,
+      "set-tags": handleSetTags,
       birthday: handleBirthday,
       list: handleList,
       upcoming: handleUpcoming,
@@ -110,7 +110,7 @@ async function main(): Promise<void> {
   await loginClient(client);
   await registerCommands(client);
 
-  console.log("Scraping member profiles for traits...");
+  console.log("Scraping member profiles for tags...");
   await scrapeAllMembers(client);
 
   startScheduler(client);

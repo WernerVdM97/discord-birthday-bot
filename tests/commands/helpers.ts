@@ -6,7 +6,7 @@ export interface MockInteractionOptions {
   callerId?: string;
   isAdmin?: boolean;
   date?: string;
-  traits?: string;
+  tags?: string;
   guild?: Record<string, unknown> | null;
   /** Role IDs the caller has (for role-gate tests) */
   roleIds?: string[];
@@ -24,7 +24,7 @@ export function mockInteraction(
     getUser: vi.fn().mockReturnValue(targetUser),
     getString: vi.fn((name: string) => {
       if (name === "date") return options.date;
-      if (name === "traits") return options.traits;
+      if (name === "tags") return options.tags;
       return null;
     }),
   };

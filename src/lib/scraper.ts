@@ -1,13 +1,13 @@
 import type { Client, GuildMember } from "discord.js";
 import { getDiscordConfig } from "./config.js";
-import { addTrait, getTraits, removeScrapedTraits } from "./db.js";
+import { addTag, getTags, removeScrapedTags } from "./db.js";
 
 /**
- * Extract traits from a guild member's Discord profile.
+ * Extract tags from a guild member's Discord profile.
  * Returns an array of tag strings.
  */
-export function extractTraits(member: GuildMember): string[] {
-  const traits: string[] = [];
+export function extractTags(member: GuildMember): string[] {
+  const tags: string[] = [];
 
   // Roles (excluding @everyone), sorted by position (highest first), top 5
   const roles = member.roles.cache
@@ -17,12 +17,12 @@ export function extractTraits(member: GuildMember): string[] {
     .slice(0, 5);
 
   for (const role of roles) {
-    traits.push(`role:${role}`);
+    tags.push(`role:${role}`);
   }
 
   // Nickname (server-specific display name)
   if (member.nickname && member.nickname !== member.user.displayName) {
-    traits.push(`nickname:${member.nickname}`);
+    tags.push(`nickname:${member.nickname}`);
   }
 
   // Join date — how long ago they joined the server
@@ -30,14 +30,14 @@ export function extractTraits(member: GuildMember): string[] {
     const daysAgo = Math.floor(
       (Date.now() - member.joinedAt.getTime()) / (1000 * 60 * 60 * 24)
     );
-    traits.push(`joined:${daysAgo}d ago`);
+    tags.push(`joined:${daysAgo}d ago`);
   }
 
-  return traits;
+  return tags;
 }
 
 /**
- * Scrape a single member's profile. Removes old scraped traits
+ * Scrape a single member's profile. Removes old scraped tags
  * and replaces them with fresh ones.
  */
 export async function scrapeOneMember(
@@ -56,16 +56,16 @@ export async function scrapeOneMember(
   }
   if (member.user.bot) return;
 
-  removeScrapedTraits(userId);
-  const traits = extractTraits(member);
-  for (const trait of traits) {
-    addTrait(userId, trait, "scraped");
+  removeScrapedTags(userId);
+  const tags = extractTags(member);
+  for (const tag of tags) {
+    addTag(userId, tag, "scraped");
   }
 }
 
 /**
  * Scrape all members in the configured guild. Idempotent — skips
- * members who already have scraped traits, unless force=true.
+ * members who already have scraped tags, unless force=true.
  */
 export async function scrapeAllMembers(
   client: Client,
@@ -88,8 +88,8 @@ export async function scrapeAllMembers(
     // Skip bots
     if (member.user.bot) continue;
 
-    // Check if scraped traits already exist for this user
-    const existing = getTraits(member.id).filter(
+    // Check if scraped tags already exist for this user
+    const existing = getTags(member.id).filter(
       (t) => t.source === "scraped"
     );
 
@@ -98,19 +98,19 @@ export async function scrapeAllMembers(
       continue;
     }
 
-    // On forced refresh, remove old scraped traits first
+    // On forced refresh, remove old scraped tags first
     if (force && existing.length > 0) {
-      removeScrapedTraits(member.id);
+      removeScrapedTags(member.id);
     }
 
-    const traits = extractTraits(member);
-    for (const trait of traits) {
-      addTrait(member.id, trait, "scraped");
+    const tags = extractTags(member);
+    for (const tag of tags) {
+      addTag(member.id, tag, "scraped");
     }
     added++;
   }
 
   console.log(
-    `Scraper: ${added} members populated, ${skipped} already had traits`
+    `Scraper: ${added} members populated, ${skipped} already had tags`
   );
 }

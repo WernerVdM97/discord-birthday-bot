@@ -1,21 +1,21 @@
 import { callLLM } from "./llm.js";
 
-const EMOJI_PROMPT = `You are picking ONE emoji that summarizes a Discord user's vibe based on their traits. Rules:
+const EMOJI_PROMPT = `You are picking ONE emoji that summarizes a Discord user's vibe based on their tags. Rules:
 - Return exactly ONE emoji character, nothing else — no text, no punctuation
 - The emoji should roast them lightly but be recognizable
-- Example traits "admin, joined:2018d ago, nickname:BossMan" → 🗿
-- Example traits "role:Memelord, account:2016" → 🤡
-- Example traits "role:Booster" → 💎
-- No traits → 🎂
+- Example tags "admin, joined:2018d ago, nickname:BossMan" → 🗿
+- Example tags "role:Memelord, account:2016" → 🤡
+- Example tags "role:Booster" → 💎
+- No tags → 🎂
 - Be creative, current, and meme-aware`;
 
-export async function generateTraitEmoji(traits: string[]): Promise<string> {
-  if (traits.length === 0) return "🎂";
+export async function generateTagEmoji(tags: string[]): Promise<string> {
+  if (tags.length === 0) return "🎂";
 
-  const traitList = traits.join(", ");
+  const tagList = tags.join(", ");
   const messages = [
     { role: "system" as const, content: EMOJI_PROMPT },
-    { role: "user" as const, content: `Traits: ${traitList}` },
+    { role: "user" as const, content: `Tags: ${tagList}` },
   ];
 
   try {

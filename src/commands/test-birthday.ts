@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { getBirthday, getTraits, getWishCache } from "../lib/db.js";
+import { getBirthday, getTags, getWishCache } from "../lib/db.js";
 import { buildMessages, callLLM } from "../lib/llm.js";
 import { isBotAdmin } from "../lib/roles.js";
 
@@ -32,11 +32,11 @@ export async function handleTestBirthday(
   let wish = getWishCache(user.id, currentYear)?.wish;
 
   if (!wish) {
-    const traits = getTraits(user.id).map((t) => t.trait);
+    const tags = getTags(user.id).map((t) => t.tag);
     const messages = buildMessages(
       entry.username,
       entry.birthday,
-      traits
+      tags
     );
     try {
       wish = await callLLM(messages);

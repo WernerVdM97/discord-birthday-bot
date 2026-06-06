@@ -1,26 +1,26 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { handleSetTraits } from "../../src/commands/set-traits.js";
-import { initDb, getTraits } from "../../src/lib/db.js";
+import { handleSetTags } from "../../src/commands/set-tags.js";
+import { initDb, getTags } from "../../src/lib/db.js";
 import { mockInteraction } from "./helpers.js";
 
 beforeEach(() => {
   initDb(":memory:");
 });
 
-describe("handleSetTraits", () => {
-  it("stores manual traits and confirms", async () => {
+describe("handleSetTags", () => {
+  it("stores manual tags and confirms", async () => {
     const interaction = mockInteraction({
       user: { id: "u1", displayName: "Alice" },
-      traits: "admin, memelord",
+      tags: "admin, memelord",
     });
 
-    await handleSetTraits(interaction);
+    await handleSetTags(interaction);
 
-    const traits = getTraits("u1");
-    const manual = traits.filter((t) => t.source === "manual");
+    const tags = getTags("u1");
+    const manual = tags.filter((t) => t.source === "manual");
     expect(manual).toHaveLength(2);
-    expect(manual.map((t) => t.trait)).toContain("admin");
-    expect(manual.map((t) => t.trait)).toContain("memelord");
+    expect(manual.map((t) => t.tag)).toContain("admin");
+    expect(manual.map((t) => t.tag)).toContain("memelord");
 
     expect(interaction.reply).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -30,58 +30,58 @@ describe("handleSetTraits", () => {
     );
   });
 
-  it("replaces existing manual traits", async () => {
-    // Set initial traits
+  it("replaces existing manual tags", async () => {
+    // Set initial tags
     const first = mockInteraction({
       user: { id: "u1", displayName: "Alice" },
-      traits: "admin, memelord",
+      tags: "admin, memelord",
     });
-    await handleSetTraits(first);
+    await handleSetTags(first);
 
     // Replace
     const second = mockInteraction({
       user: { id: "u1", displayName: "Alice" },
-      traits: "chaos, gremlin",
+      tags: "chaos, gremlin",
     });
-    await handleSetTraits(second);
+    await handleSetTags(second);
 
-    const manual = getTraits("u1").filter((t) => t.source === "manual");
+    const manual = getTags("u1").filter((t) => t.source === "manual");
     expect(manual).toHaveLength(2);
-    expect(manual.map((t) => t.trait)).toEqual(["chaos", "gremlin"]);
+    expect(manual.map((t) => t.tag)).toEqual(["chaos", "gremlin"]);
   });
 
-  it("trims whitespace around traits", async () => {
+  it("trims whitespace around tags", async () => {
     const interaction = mockInteraction({
-      traits: "  admin ,  memelord  ",
+      tags: "  admin ,  memelord  ",
     });
 
-    await handleSetTraits(interaction);
+    await handleSetTags(interaction);
 
-    const manual = getTraits("u1").filter((t) => t.source === "manual");
-    expect(manual.map((t) => t.trait)).toEqual(["admin", "memelord"]);
+    const manual = getTags("u1").filter((t) => t.source === "manual");
+    expect(manual.map((t) => t.tag)).toEqual(["admin", "memelord"]);
   });
 
-  it("rejects empty traits string", async () => {
+  it("rejects empty tags string", async () => {
     const interaction = mockInteraction({
-      traits: "",
+      tags: "",
     });
 
-    await handleSetTraits(interaction);
+    await handleSetTags(interaction);
 
     expect(interaction.reply).toHaveBeenCalledWith(
       expect.objectContaining({
-        content: expect.stringContaining("at least one trait"),
+        content: expect.stringContaining("at least one tag"),
         ephemeral: true,
       })
     );
   });
 
-  it("rejects blocked traits", async () => {
+  it("rejects blocked tags", async () => {
     const interaction = mockInteraction({
-      traits: "admin, nigg",
+      tags: "admin, nigg",
     });
 
-    await handleSetTraits(interaction);
+    await handleSetTags(interaction);
 
     expect(interaction.reply).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -92,7 +92,7 @@ describe("handleSetTraits", () => {
   });
 });
 
-describe("handleSetTraits with role gate", () => {
+describe("handleSetTags with role gate", () => {
   beforeEach(() => {
     process.env["BOT_ADMIN_ROLE_ID"] = "role-admin";
     process.env["BOT_MEMBER_ROLE_ID"] = "role-member";
@@ -105,10 +105,10 @@ describe("handleSetTraits with role gate", () => {
 
   it("rejects users without a role", async () => {
     const interaction = mockInteraction({
-      traits: "admin, memelord",
+      tags: "admin, memelord",
     });
 
-    await handleSetTraits(interaction);
+    await handleSetTags(interaction);
 
     expect(interaction.reply).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -117,25 +117,25 @@ describe("handleSetTraits with role gate", () => {
     );
   });
 
-  it("allows admin role to set traits", async () => {
+  it("allows admin role to set tags", async () => {
     const interaction = mockInteraction({
       roleIds: ["role-admin"],
-      traits: "admin, memelord",
+      tags: "admin, memelord",
     });
 
-    await handleSetTraits(interaction);
+    await handleSetTags(interaction);
 
-    const manual = getTraits("u1").filter((t) => t.source === "manual");
+    const manual = getTags("u1").filter((t) => t.source === "manual");
     expect(manual).toHaveLength(2);
   });
 
-  it("rejects member role from replacing traits", async () => {
+  it("rejects member role from replacing tags", async () => {
     const interaction = mockInteraction({
       roleIds: ["role-member"],
-      traits: "admin, memelord",
+      tags: "admin, memelord",
     });
 
-    await handleSetTraits(interaction);
+    await handleSetTags(interaction);
 
     expect(interaction.reply).toHaveBeenCalledWith(
       expect.objectContaining({

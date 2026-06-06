@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { checkAndPostBirthdays } from "../src/scheduler/daily-check.js";
-import { initDb, upsertBirthday, addTrait, setWishCache } from "../src/lib/db.js";
+import { initDb, upsertBirthday, addTag, setWishCache } from "../src/lib/db.js";
 
 beforeEach(() => {
   process.env["DISCORD_TOKEN"] = "mock";

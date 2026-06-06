@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { getTraits, addTrait, clearManualTraits } from "../lib/db.js";
+import { getTags, addTag, clearManualTags } from "../lib/db.js";
 import { isPrivileged, isMemberOrAbove, isRoleGateActive } from "../lib/roles.js";
 
 function checkAccess(interaction: ChatInputCommandInteraction): boolean {
@@ -9,12 +9,12 @@ function checkAccess(interaction: ChatInputCommandInteraction): boolean {
 
 function reject(interaction: ChatInputCommandInteraction) {
   return interaction.reply({
-    content: "Only admins can manage traits.",
+    content: "Only admins can manage tags.",
     ephemeral: true,
   });
 }
 
-export async function handleTraitRemove(
+export async function handleTagRemove(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
   if (!checkAccess(interaction)) {
@@ -23,27 +23,27 @@ export async function handleTraitRemove(
   }
 
   const user = interaction.options.getUser("user", true);
-  const traitToRemove = interaction.options.getString("trait", true).trim().toLowerCase();
+  const tagToRemove = interaction.options.getString("tag", true).trim().toLowerCase();
 
-  const allTraits = getTraits(user.id);
-  const manualTraits = allTraits
+  const allTags = getTags(user.id);
+  const manualTags = allTags
     .filter((t) => t.source === "manual")
-    .filter((t) => t.trait.toLowerCase() !== traitToRemove)
-    .map((t) => t.trait);
+    .filter((t) => t.tag.toLowerCase() !== tagToRemove)
+    .map((t) => t.tag);
 
-  // Rebuild manual traits without the removed one
-  clearManualTraits(user.id);
-  for (const trait of manualTraits) {
-    addTrait(user.id, trait, "manual");
+  // Rebuild manual tags without the removed one
+  clearManualTags(user.id);
+  for (const tag of manualTags) {
+    addTag(user.id, tag, "manual");
   }
 
   await interaction.reply({
-    content: `Removed \"${traitToRemove}\" from **${user.displayName}**'s traits.`,
+    content: `Removed \"${tagToRemove}\" from **${user.displayName}**'s tags.`,
     ephemeral: true,
   });
 }
 
-export async function handleTraitsClear(
+export async function handleTagsClear(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
   if (!checkAccess(interaction)) {
@@ -53,10 +53,10 @@ export async function handleTraitsClear(
 
   const user = interaction.options.getUser("user", true);
 
-  clearManualTraits(user.id);
+  clearManualTags(user.id);
 
   await interaction.reply({
-    content: `Cleared all manual traits for **${user.displayName}**.`,
+    content: `Cleared all manual tags for **${user.displayName}**.`,
     ephemeral: true,
   });
 }
