@@ -81,6 +81,9 @@ export async function registerCommands(client: Client): Promise<void> {
       .setName("missing")
       .setDescription("List server members whose birthdays haven't been set"),
     new SlashCommandBuilder()
+      .setName("trigger")
+      .setDescription("Manually run the birthday check (bot owner only)"),
+    new SlashCommandBuilder()
       .setName("update")
       .setDescription("Pull latest code and restart the bot (bot owner only)"),
     new SlashCommandBuilder()

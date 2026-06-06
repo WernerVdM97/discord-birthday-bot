@@ -7,11 +7,14 @@ Dank, meme-heavy birthday wishes for a private Discord server (~20 people). Runs
 - **Daily check at 7am** — posts a custom LLM-generated roast to `#announcements` on someone's birthday
 - **Slash commands:**
   - `/birthday @user` — look up a birthday
-  - `/birthdays` — list all stored birthdays
+  - `/list` — all birthdays grouped by month (🔒 = locked)
   - `/upcoming` — birthdays this month
   - `/set-birthday @user MM-DD` — add or update a birthday (self-set entries are locked)
   - `/set-traits @user trait1, trait2` — tag someone for the LLM to roast them with
-  - `/missing` — list members without birthdays
+  - `/missing` — list members without birthdays (role-gated when configured)
+  - `/test-birthday @user` — preview a wish without posting (bot owner only)
+  - `/trigger` — manually run the daily birthday check (bot owner only)
+  - `/update` — git pull + rebuild + restart (bot owner only)
   - `/help` — show all commands (also reply to any DM)
 - **Auto-scraped traits** — pulls roles, nicknames, and join dates from Discord profiles to feed the LLM
 - **Monthly wish regeneration** — re-generates all birthday messages on the 1st of each month via DeepSeek API
@@ -66,6 +69,7 @@ npm run build
 
 ```bash
 sudo cp scripts/birthday-bot.service /etc/systemd/system/
+sudo cp scripts/birthday-bot-deploy.service /etc/systemd/system/
 sudo cp scripts/birthday-bot-deploy.timer /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now birthday-bot.service
@@ -104,6 +108,7 @@ Or add one at a time with slash commands once the bot is online:
 | `BOT_ADMIN_ROLE_ID` | (Optional) Discord role ID for admins — can set any birthday and override locks |
 | `BOT_MEMBER_ROLE_ID` | (Optional) Discord role ID for members — can set their own birthday and traits |
 | `DEEPSEEK_API_KEY` | DeepSeek API key |
+| `CRON_SCHEDULE` | (Optional) Cron expression for the daily check — defaults to `0 7 * * *` (7am) |
 
 > **Getting role IDs:** Enable Developer Mode in Discord (Settings → Advanced). Then go to Server Settings → Roles → right-click the role → Copy ID.
 >

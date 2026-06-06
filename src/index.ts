@@ -12,6 +12,7 @@ import { handleUpcoming } from "./commands/upcoming.js";
 import { handleMissing } from "./commands/missing.js";
 import { handleTestBirthday } from "./commands/test-birthday.js";
 import { handleUpdate } from "./commands/update.js";
+import { handleTrigger } from "./commands/trigger.js";
 import type { ChatInputCommandInteraction } from "discord.js";
 import { readFileSync } from "node:fs";
 

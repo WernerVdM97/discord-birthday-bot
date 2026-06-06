@@ -10,8 +10,9 @@ import { callLLM, buildMessages } from "../lib/llm.js";
  * Runs daily at 7:00 AM server time.
  */
 export function startScheduler(client: Client): void {
-  // Daily birthday check at 7:00 AM
-  cron.schedule("0 7 * * *", () => {
+  const schedule = process.env["CRON_SCHEDULE"] ?? "0 7 * * *";
+
+  cron.schedule(schedule, () => {
     checkAndPostBirthdays(client).catch((err) =>
       console.error("Daily birthday check failed:", err)
     );

@@ -20,6 +20,7 @@ export function buildHelpText(): string {
 \`/set-traits @user trait1, trait2\` — Tag someone for roasting
 \`/missing\` — List members without birthdays
 \`/test-birthday @user\` — Preview a wish (bot owner only)
+\`/trigger\` — Manually run the birthday check (bot owner only)
 \`/update\` — Pull latest code and restart (bot owner only)
 \`/help\` — Show this list
 
