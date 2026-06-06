@@ -12,6 +12,7 @@ Dank, meme-heavy birthday wishes for a private Discord server (~20 people). Runs
   - `/set-birthday @user MM-DD` — add or update a birthday (self-set entries are locked)
   - `/set-traits @user trait1, trait2` — tag someone for the LLM to roast them with
   - `/missing` — list members without birthdays
+  - `/help` — show all commands (also reply to any DM)
 - **Auto-scraped traits** — pulls roles, nicknames, and join dates from Discord profiles to feed the LLM
 - **Monthly wish regeneration** — re-generates all birthday messages on the 1st of each month via DeepSeek API
 - **Birthday locking** — self-set birthdays can only be changed by the owner, a server admin, or the bot admin
@@ -37,7 +38,7 @@ Dank, meme-heavy birthday wishes for a private Discord server (~20 people). Runs
    - Scopes: `bot`, `applications.commands`
    - Bot Permissions: `Send Messages`, `Use Slash Commands`
    - Use the generated URL to invite the bot to your server
-4. Enable **Gateway Intents** in the Bot tab: `Server Members Intent`
+4. Enable **Server Members Intent** in the Bot tab (for trait scraping). DMs work by default — no extra toggle needed.
 
 ### 2. Get a DeepSeek API key
 
