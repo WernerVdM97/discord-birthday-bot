@@ -1,5 +1,6 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import { getUpcomingBirthdays } from "../lib/db.js";
+import { isPrivileged, isRoleGateActive } from "../lib/roles.js";
 
 export async function handleUpcoming(
   interaction: ChatInputCommandInteraction
@@ -8,9 +9,9 @@ export async function handleUpcoming(
   const currentMonth = now.getMonth() + 1; // JS months are 0-indexed
 
   const entries = getUpcomingBirthdays(currentMonth);
+  const monthName = now.toLocaleString("en", { month: "long" });
 
   if (entries.length === 0) {
-    const monthName = now.toLocaleString("en", { month: "long" });
     await interaction.reply({
       content: `No birthdays in ${monthName}.`,
       ephemeral: true,
@@ -18,11 +19,14 @@ export async function handleUpcoming(
     return;
   }
 
-  const lines = entries.map(
-    (e) => `• **${e.username}** — ${e.birthday}`
-  );
+  const showLocks = !isRoleGateActive() || isPrivileged(interaction);
 
-  const monthName = now.toLocaleString("en", { month: "long" });
+  const lines = entries.map((e) => {
+    const day = e.birthday.slice(3);
+    const lock = showLocks ? (e.locked ? "🔒 " : "🔓 ") : "";
+    return `• ${lock}**${day}** ${e.tagEmoji} **${e.username}**`;
+  });
+
   await interaction.reply({
     content: `**Birthdays in ${monthName}:**\n${lines.join("\n")}`,
     ephemeral: true,
