@@ -16,6 +16,7 @@ export function buildHelpText(): string {
 \`/birthday @user\` — Look up someone's birthday
 \`/list\` — List all stored birthdays (🔒 = locked)
 \`/upcoming\` — Birthdays this month
+\`/next\` — Show whose birthday is next and when
 \`/set-birthday @user MM-DD\` — Add or update a birthday
 \`/traits @user\` — Show a user's traits (scraped + manual)
 \`/add-trait @user trait\` — Add a single trait

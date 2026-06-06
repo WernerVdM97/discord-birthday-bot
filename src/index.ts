@@ -16,6 +16,7 @@ import { handleAddTrait } from "./commands/add-trait.js";
 import { handleTestBirthday } from "./commands/test-birthday.js";
 import { handleUpdate } from "./commands/update.js";
 import { handleTrigger } from "./commands/trigger.js";
+import { handleNext } from "./commands/next.js";
 import type { ChatInputCommandInteraction } from "discord.js";
 import { readFileSync } from "node:fs";
 
@@ -55,6 +56,8 @@ async function main(): Promise<void> {
       missing: handleMissing,
       "test-birthday": handleTestBirthday,
       update: handleUpdate,
+      trigger: handleTrigger,
+      next: handleNext,
       help: async (i) => {
         await i.reply({ content: buildHelpText(), ephemeral: true });
       },

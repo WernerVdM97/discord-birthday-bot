@@ -126,6 +126,9 @@ export async function registerCommands(client: Client): Promise<void> {
       .setName("update")
       .setDescription("Pull latest code and restart the bot (bot owner only)"),
     new SlashCommandBuilder()
+      .setName("next")
+      .setDescription("Show whose birthday is next and when"),
+    new SlashCommandBuilder()
       .setName("help")
       .setDescription("Show all available commands"),
     new SlashCommandBuilder()

@@ -9,6 +9,7 @@ Dank, meme-heavy birthday wishes for a private Discord server (~20 people).
   - `/birthday @user` — look up a birthday
   - `/list` — all birthdays grouped by month (🔒 = locked)
   - `/upcoming` — birthdays this month
+  - `/next` — whose birthday is next and when
   - `/set-birthday @user MM-DD` — add or update a birthday (self-set entries are locked)
   - `/traits @user` — view traits (auto-scraped + manual)
   - `/add-trait @user trait` — add a single trait (blocklist enforced)

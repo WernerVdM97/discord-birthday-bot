@@ -2,6 +2,23 @@ import type { ChatInputCommandInteraction } from "discord.js";
 import { getAllBirthdays } from "../lib/db.js";
 import { isMemberOrAbove, isRoleGateActive } from "../lib/roles.js";
 
+/** Discord message limit is 2000 chars. Keep some padding. */
+const MAX_LENGTH = 1900;
+
+function truncate(lines: string[], suffix: string): string {
+  let result = "";
+  let count = 0;
+  for (const line of lines) {
+    if (result.length + line.length + 1 > MAX_LENGTH) break;
+    result += (result ? "\n" : "") + line;
+    count++;
+  }
+  if (count < lines.length) {
+    result += `\n\n${suffix.replace("{n}", String(lines.length - count))}`;
+  }
+  return result;
+}
+
 export async function handleMissing(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
@@ -47,8 +64,12 @@ export async function handleMissing(
   }
 
   const lines = missing.map((name) => `• **${name}**`);
+  const body = truncate(
+    lines,
+    `…and {n} more.`
+  );
   await interaction.reply({
-    content: `**${missing.length} member(s) missing birthdays:**\n${lines.join("\n")}`,
+    content: `**${missing.length} member(s) missing birthdays:**\n${body}`,
     ephemeral: true,
   });
 }

@@ -3,6 +3,7 @@ import cron from "node-cron";
 import { getDiscordConfig } from "../lib/config.js";
 import { getAllBirthdays, getWishCache, getTraits, setWishCache } from "../lib/db.js";
 import { scrapeOneMember } from "../lib/scraper.js";
+import { notifyAdmin } from "../lib/notify.js";
 import { callLLM, buildMessages } from "../lib/llm.js";
 
 /**
@@ -15,17 +16,25 @@ export function startScheduler(client: Client): void {
   // 1 hour before post: scrape today's birthday users only
   cron.schedule(`0 ${postHour - 1} * * *`, () => {
     console.log(`Pre-scraping traits for today's birthdays...`);
-    scrapeTodaysBirthdayUsers(client).catch((err: unknown) =>
-      console.error("Pre-scrape failed:", err)
-    );
+    scrapeTodaysBirthdayUsers(client).catch((err: unknown) => {
+      console.error("Pre-scrape failed:", err);
+      notifyAdmin(
+        client,
+        `⚠️ Pre-scrape failed: ${String(err).slice(0, 200)}`
+      ).catch(() => {});
+    });
   });
 
   // 30 minutes before post: generate wishes for today's birthday users only
   cron.schedule(`30 ${postHour - 1} * * *`, () => {
     console.log(`Pre-generating wishes for today's birthdays...`);
-    generateTodaysWishes(client).catch((err: unknown) =>
-      console.error("Pre-generate failed:", err)
-    );
+    generateTodaysWishes(client).catch((err: unknown) => {
+      console.error("Pre-generate failed:", err);
+      notifyAdmin(
+        client,
+        `⚠️ Pre-generate failed: ${String(err).slice(0, 200)}`
+      ).catch(() => {});
+    });
   });
 
   // Post time: check and post
@@ -102,6 +111,10 @@ export async function checkAndPostBirthdays(client: Client): Promise<void> {
 
   if (!channel) {
     console.error(`Announcements channel ${announcementsChannelId} not found`);
+    notifyAdmin(
+      client,
+      `⚠️ Birthday post failed: announcements channel ${announcementsChannelId} not found`
+    ).catch(() => {});
     return;
   }
 
@@ -127,6 +140,10 @@ export async function checkAndPostBirthdays(client: Client): Promise<void> {
       } catch (err) {
         console.error(`Failed to generate on-the-fly wish for ${entry.username}:`, err);
         wish = `Happy birthday ${entry.username}! 🎂`;
+        notifyAdmin(
+          client,
+          `⚠️ Failed to generate wish for ${entry.username}: ${String(err).slice(0, 200)}`
+        ).catch(() => {});
       }
     }
 
@@ -135,6 +152,10 @@ export async function checkAndPostBirthdays(client: Client): Promise<void> {
       console.log(`Posted birthday wish for ${entry.username}`);
     } catch (err) {
       console.error(`Failed to post wish for ${entry.username}:`, err);
+      notifyAdmin(
+        client,
+        `⚠️ Failed to post birthday wish for ${entry.username}: ${String(err).slice(0, 200)}`
+      ).catch(() => {});
     }
   }
 }
