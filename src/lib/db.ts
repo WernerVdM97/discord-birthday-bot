@@ -18,6 +18,31 @@ export function initDb(path: string = "data/birthdays.db"): void {
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
 
+  // --- Migrations (run before CREATE TABLE so renames don't conflict) ---
+
+  // Migration: rename traits table -> tags (from the trait→tag rename)
+  try {
+    db.exec("ALTER TABLE traits RENAME TO tags");
+  } catch {
+    // Table already renamed or doesn't exist
+  }
+
+  // Migration: rename trait column -> tag in tags table
+  try {
+    db.exec("ALTER TABLE tags RENAME COLUMN trait TO tag");
+  } catch {
+    // Column already renamed or doesn't exist
+  }
+
+  // Migration: rename trait_emoji column -> tag_emoji in birthdays table
+  try {
+    db.exec("ALTER TABLE birthdays RENAME COLUMN trait_emoji TO tag_emoji");
+  } catch {
+    // Column already renamed or doesn't exist
+  }
+
+  // --- Create tables (no-ops if already present) ---
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS birthdays (
       user_id     TEXT PRIMARY KEY,
@@ -43,7 +68,7 @@ export function initDb(path: string = "data/birthdays.db"): void {
     );
   `);
 
-  // Migration: add tag_emoji column
+  // Migration: add tag_emoji column (for fresh DBs or pre-emoji schemas)
   try {
     db.exec(
       "ALTER TABLE birthdays ADD COLUMN tag_emoji TEXT NOT NULL DEFAULT '🎂'"
