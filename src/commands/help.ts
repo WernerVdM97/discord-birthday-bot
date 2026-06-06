@@ -17,7 +17,11 @@ export function buildHelpText(): string {
 \`/list\` — List all stored birthdays (🔒 = locked)
 \`/upcoming\` — Birthdays this month
 \`/set-birthday @user MM-DD\` — Add or update a birthday
-\`/set-traits @user trait1, trait2\` — Tag someone for roasting
+\`/traits @user\` — Show a user's traits (scraped + manual)
+\`/add-trait @user trait\` — Add a single trait
+\`/set-traits @user trait1, trait2\` — Replace all traits (admin only)
+\`/trait-remove @user trait\` — Remove one trait (admin only)
+\`/traits-clear @user\` — Clear all manual traits (admin only)
 \`/missing\` — List members without birthdays
 \`/test-birthday @user\` — Preview a wish (bot owner only)
 \`/trigger\` — Manually run the birthday check (bot owner only)

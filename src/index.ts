@@ -10,6 +10,9 @@ import { handleBirthday } from "./commands/birthday.js";
 import { handleList } from "./commands/list.js";
 import { handleUpcoming } from "./commands/upcoming.js";
 import { handleMissing } from "./commands/missing.js";
+import { handleTraits } from "./commands/traits.js";
+import { handleTraitRemove, handleTraitsClear } from "./commands/trait-remove.js";
+import { handleAddTrait } from "./commands/add-trait.js";
 import { handleTestBirthday } from "./commands/test-birthday.js";
 import { handleUpdate } from "./commands/update.js";
 import { handleTrigger } from "./commands/trigger.js";
@@ -41,6 +44,10 @@ async function main(): Promise<void> {
       (i: ChatInputCommandInteraction) => Promise<void>
     > = {
       "set-birthday": handleSetBirthday,
+      traits: handleTraits,
+      "add-trait": handleAddTrait,
+      "trait-remove": handleTraitRemove,
+      "traits-clear": handleTraitsClear,
       "set-traits": handleSetTraits,
       birthday: handleBirthday,
       list: handleList,

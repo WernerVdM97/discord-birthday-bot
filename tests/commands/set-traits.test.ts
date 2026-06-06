@@ -75,6 +75,21 @@ describe("handleSetTraits", () => {
       })
     );
   });
+
+  it("rejects blocked traits", async () => {
+    const interaction = mockInteraction({
+      traits: "admin, nigg",
+    });
+
+    await handleSetTraits(interaction);
+
+    expect(interaction.reply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.stringContaining("not allowed"),
+        ephemeral: true,
+      })
+    );
+  });
 });
 
 describe("handleSetTraits with role gate", () => {
@@ -102,9 +117,9 @@ describe("handleSetTraits with role gate", () => {
     );
   });
 
-  it("allows member role to set traits", async () => {
+  it("allows admin role to set traits", async () => {
     const interaction = mockInteraction({
-      roleIds: ["role-member"],
+      roleIds: ["role-admin"],
       traits: "admin, memelord",
     });
 
@@ -112,5 +127,20 @@ describe("handleSetTraits with role gate", () => {
 
     const manual = getTraits("u1").filter((t) => t.source === "manual");
     expect(manual).toHaveLength(2);
+  });
+
+  it("rejects member role from replacing traits", async () => {
+    const interaction = mockInteraction({
+      roleIds: ["role-member"],
+      traits: "admin, memelord",
+    });
+
+    await handleSetTraits(interaction);
+
+    expect(interaction.reply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.stringContaining("permission"),
+      })
+    );
   });
 });

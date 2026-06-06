@@ -1,6 +1,6 @@
 import type { Client, GuildMember } from "discord.js";
 import { getDiscordConfig } from "./config.js";
-import { addTrait, getTraits } from "./db.js";
+import { addTrait, getTraits, removeScrapedTraits } from "./db.js";
 
 /**
  * Extract traits from a guild member's Discord profile.
@@ -37,11 +37,13 @@ export function extractTraits(member: GuildMember): string[] {
 }
 
 /**
- * Scrape all members in the configured guild. For each member without
- * existing scraped traits, extract and store them. Non-destructive
- * (will not touch existing scraped traits on re-run).
+ * Scrape all members in the configured guild. Idempotent — skips
+ * members who already have scraped traits, unless force=true.
  */
-export async function scrapeAllMembers(client: Client): Promise<void> {
+export async function scrapeAllMembers(
+  client: Client,
+  force = false
+): Promise<void> {
   const { guildId } = getDiscordConfig();
   const guild = client.guilds.cache.get(guildId);
 
@@ -63,9 +65,15 @@ export async function scrapeAllMembers(client: Client): Promise<void> {
     const existing = getTraits(member.id).filter(
       (t) => t.source === "scraped"
     );
-    if (existing.length > 0) {
+
+    if (!force && existing.length > 0) {
       skipped++;
       continue;
+    }
+
+    // On forced refresh, remove old scraped traits first
+    if (force && existing.length > 0) {
+      removeScrapedTraits(member.id);
     }
 
     const traits = extractTraits(member);

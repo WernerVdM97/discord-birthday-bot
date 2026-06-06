@@ -1,11 +1,12 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import { clearManualTraits, addTrait } from "../lib/db.js";
-import { isMemberOrAbove, isRoleGateActive } from "../lib/roles.js";
+import { isPrivileged, isRoleGateActive } from "../lib/roles.js";
+import { findBlockedTrait } from "../lib/blocklist.js";
 
 export async function handleSetTraits(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
-  if (isRoleGateActive() && !isMemberOrAbove(interaction)) {
+  if (isRoleGateActive() && !isPrivileged(interaction)) {
     await interaction.reply({
       content: "You don't have permission to set traits.",
       ephemeral: true,
@@ -24,6 +25,16 @@ export async function handleSetTraits(
   if (traits.length === 0) {
     await interaction.reply({
       content: "Provide at least one trait, comma-separated.",
+      ephemeral: true,
+    });
+    return;
+  }
+
+  // Block offensive traits
+  const blocked = findBlockedTrait(traits);
+  if (blocked) {
+    await interaction.reply({
+      content: `Trait "${blocked}" is not allowed.`,
       ephemeral: true,
     });
     return;

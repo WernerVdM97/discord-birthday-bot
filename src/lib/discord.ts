@@ -48,6 +48,24 @@ export async function registerCommands(client: Client): Promise<void> {
       .setName("upcoming")
       .setDescription("List birthdays in the current month"),
     new SlashCommandBuilder()
+      .setName("trait-remove")
+      .setDescription("Remove a specific trait from a user (admin only)")
+      .addUserOption((opt) =>
+        opt.setName("user").setDescription("The user").setRequired(true)
+      )
+      .addStringOption((opt) =>
+        opt
+          .setName("trait")
+          .setDescription("Trait to remove")
+          .setRequired(true)
+      ),
+    new SlashCommandBuilder()
+      .setName("traits-clear")
+      .setDescription("Clear all manual traits for a user (admin only)")
+      .addUserOption((opt) =>
+        opt.setName("user").setDescription("The user").setRequired(true)
+      ),
+    new SlashCommandBuilder()
       .setName("set-birthday")
       .setDescription("Add or update a birthday")
       .addUserOption((opt) =>
@@ -60,6 +78,27 @@ export async function registerCommands(client: Client): Promise<void> {
         opt
           .setName("date")
           .setDescription("Birthday in MM-DD format (e.g. 03-14)")
+          .setRequired(true)
+      ),
+    new SlashCommandBuilder()
+      .setName("traits")
+      .setDescription("Show traits for a user")
+      .addUserOption((opt) =>
+        opt
+          .setName("user")
+          .setDescription("The user")
+          .setRequired(true)
+      ),
+    new SlashCommandBuilder()
+      .setName("add-trait")
+      .setDescription("Add a single trait")
+      .addUserOption((opt) =>
+        opt.setName("user").setDescription("The user").setRequired(true)
+      )
+      .addStringOption((opt) =>
+        opt
+          .setName("trait")
+          .setDescription("Trait to add")
           .setRequired(true)
       ),
     new SlashCommandBuilder()

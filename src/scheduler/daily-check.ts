@@ -2,6 +2,7 @@ import type { Client, TextChannel } from "discord.js";
 import cron from "node-cron";
 import { getDiscordConfig } from "../lib/config.js";
 import { getAllBirthdays, getWishCache, getTraits } from "../lib/db.js";
+import { scrapeAllMembers } from "../lib/scraper.js";
 import { generateWishes, regenerateMonthly } from "../lib/llm.js";
 import { callLLM, buildMessages } from "../lib/llm.js";
 
@@ -18,14 +19,19 @@ export function startScheduler(client: Client): void {
     );
   });
 
-  // Monthly wish regeneration on the 1st at 6:00 AM
+  // Monthly maintenance on the 1st at 6:00 AM
   cron.schedule("0 6 1 * *", () => {
-    console.log("Running monthly wish regeneration...");
+    console.log("Running monthly maintenance...");
     const entries = getAllBirthdays();
-    regenerateMonthly(entries)
-      .then(() => console.log("Monthly wish regeneration complete"))
-      .catch((err) =>
-        console.error("Monthly wish regeneration failed:", err)
+
+    scrapeAllMembers(client, true)
+      .then(() => {
+        console.log("Traits refreshed. Regenerating wishes...");
+        return regenerateMonthly(entries);
+      })
+      .then(() => console.log("Monthly maintenance complete"))
+      .catch((err: unknown) =>
+        console.error("Monthly maintenance failed:", err)
       );
   });
 

@@ -1,33 +1,38 @@
 # Discord Birthday Bot
 
-Dank, meme-heavy birthday wishes for a private Discord server (~20 people). Runs on a Raspberry Pi, auto-deploys from GitHub.
+Dank, meme-heavy birthday wishes for a private Discord server (~20 people).
 
 ## Features
 
-- **Daily check at 7am** — posts a custom LLM-generated roast to `#announcements` on someone's birthday
+- **Daily check** — posts a custom LLM-generated roast to `#announcements` on someone's birthday. Schedule configurable via `CRON_SCHEDULE`.
 - **Slash commands:**
   - `/birthday @user` — look up a birthday
   - `/list` — all birthdays grouped by month (🔒 = locked)
   - `/upcoming` — birthdays this month
   - `/set-birthday @user MM-DD` — add or update a birthday (self-set entries are locked)
-  - `/set-traits @user trait1, trait2` — tag someone for the LLM to roast them with
+  - `/traits @user` — view traits (auto-scraped + manual)
+  - `/add-trait @user trait` — add a single trait (blocklist enforced)
+  - `/set-traits @user a, b, c` — replace all manual traits (admin only)
+  - `/trait-remove @user trait` — remove one trait (admin only)
+  - `/traits-clear @user` — clear all manual traits (admin only)
   - `/missing` — list members without birthdays (role-gated when configured)
   - `/test-birthday @user` — preview a wish without posting (bot owner only)
   - `/trigger` — manually run the daily birthday check (bot owner only)
   - `/update` — git pull + rebuild + restart (bot owner only)
   - `/help` — show all commands (also reply to any DM)
-- **Auto-scraped traits** — pulls roles, nicknames, and join dates from Discord profiles to feed the LLM
-- **Monthly wish regeneration** — re-generates all birthday messages on the 1st of each month via DeepSeek API
-- **Birthday locking** — self-set birthdays can only be changed by the owner, a server admin, or the bot admin
-- **Role-based access** — restrict writing commands (`/set-birthday`, `/set-traits`, `/missing`) to specific Discord roles via `BOT_ADMIN_ROLE_ID` and `BOT_MEMBER_ROLE_ID`
-- **Admin notifications** — DM on startup (with commit hash) and on unhandled errors when `BOT_ADMIN_ID` is set
-- **Auto-deployment** — Pi polls GitHub every 5 min for new commits on `main`, pulls, builds, restarts
+- **Auto-scraped traits** — roles, nicknames, and join dates extracted from Discord profiles. Refreshed monthly before wish regeneration.
+- **Monthly maintenance** — on the 1st of each month: refresh traits → regenerate all wishes via DeepSeek.
+- **Birthday locking** — self-set birthdays can only be changed by the owner, a server admin, or the bot admin.
+- **Role-based access** — restrict write commands to specific Discord roles via `BOT_ADMIN_ROLE_ID` and `BOT_MEMBER_ROLE_ID`.
+- **Trait blocklist** — slurs and hate speech blocked from traits. Configurable via `BOT_TRAIT_BLOCKLIST`.
+- **Admin notifications** — DM on startup (with commit hash) and on unhandled errors when `BOT_ADMIN_ID` is set.
+- **Auto-deployment** — Pi polls GitHub every 5 min for new commits on `main`, pulls, builds, restarts. Or use `/update` in Discord.
 
 ## Tech Stack
 
 - [discord.js](https://discord.js.org/) v14 — Discord gateway + slash commands
 - [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) — zero-config local DB
-- [node-cron](https://github.com/node-cron/node-cron) — daily scheduler
+- [node-cron](https://github.com/node-cron/node-cron) — daily + monthly scheduler
 - [DeepSeek API](https://api-docs.deepseek.com/) — LLM for wish generation
 - [Vitest](https://vitest.dev/) — test runner
 - TypeScript, systemd
@@ -104,15 +109,16 @@ Or add one at a time with slash commands once the bot is online:
 | `DISCORD_APP_ID` | Application ID from General Information |
 | `DISCORD_GUILD_ID` | Your server's ID (right-click server → Copy ID) |
 | `ANNOUNCEMENTS_CHANNEL_ID` | Channel ID for birthday posts |
-| `BOT_ADMIN_ID` | (Optional) Your Discord user ID — gets DM notifications on startup/errors + can override locked birthdays |
-| `BOT_ADMIN_ROLE_ID` | (Optional) Discord role ID for admins — can set any birthday and override locks |
-| `BOT_MEMBER_ROLE_ID` | (Optional) Discord role ID for members — can set their own birthday and traits |
+| `BOT_ADMIN_ID` | (Optional) Your Discord user ID — gets DM notifications on startup/errors, can override locked birthdays, and use `/trigger` `/update` `/test-birthday` |
+| `BOT_ADMIN_ROLE_ID` | (Optional) Discord role ID for admins — can set any birthday, manage traits, override locks |
+| `BOT_MEMBER_ROLE_ID` | (Optional) Discord role ID for members — can set their own birthday and add traits |
 | `DEEPSEEK_API_KEY` | DeepSeek API key |
 | `CRON_SCHEDULE` | (Optional) Cron expression for the daily check — defaults to `0 7 * * *` (7am) |
+| `BOT_TRAIT_BLOCKLIST` | (Optional) Comma-separated blocked substrings for traits (defaults to common slurs) |
 
 > **Getting role IDs:** Enable Developer Mode in Discord (Settings → Advanced). Then go to Server Settings → Roles → right-click the role → Copy ID.
 >
-> If no role IDs are set, all commands are open to everyone (backwards compatible). When set, read-only commands stay public but write commands require at least the member role.
+> If no role IDs are set, all commands are open to everyone. When set, write commands require at least the member role, and admin commands require the admin role.
 
 ## Development
 

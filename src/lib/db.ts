@@ -180,6 +180,12 @@ export function clearManualTraits(userId: string): void {
     .run(userId);
 }
 
+export function removeScrapedTraits(userId: string): void {
+  getDb()
+    .prepare("DELETE FROM traits WHERE user_id = ? AND source = 'scraped'")
+    .run(userId);
+}
+
 // --- Wish Cache ---
 
 export function getWishCache(
