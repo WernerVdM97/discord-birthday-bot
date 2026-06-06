@@ -1,0 +1,25 @@
+[Unit]
+Description=Discord Birthday Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/discord-birthday-bot
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+EnvironmentFile=/home/pi/discord-birthday-bot/.env
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/pi/discord-birthday-bot/data /home/pi/discord-birthday-bot/cache
+ReadOnlyPaths=/home/pi/discord-birthday-bot/.env
+
+[Install]
+WantedBy=multi-user.target
