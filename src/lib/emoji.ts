@@ -1,3 +1,4 @@
+import type { Tag } from "../types.js";
 import { callLLM } from "./llm.js";
 
 const EMOJI_PROMPT = `You are picking ONE emoji that summarizes a Discord user's vibe based on their tags. Rules:
@@ -9,10 +10,10 @@ const EMOJI_PROMPT = `You are picking ONE emoji that summarizes a Discord user's
 - No tags → 🎂
 - Be creative, current, and meme-aware`;
 
-export async function generateTagEmoji(tags: string[]): Promise<string> {
+export async function generateTagEmoji(tags: Tag[]): Promise<string> {
   if (tags.length === 0) return "🎂";
 
-  const tagList = tags.join(", ");
+  const tagList = tags.map((t) => t.tag).join(", ");
   const messages = [
     { role: "system" as const, content: EMOJI_PROMPT },
     { role: "user" as const, content: `Tags: ${tagList}` },

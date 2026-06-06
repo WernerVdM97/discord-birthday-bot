@@ -26,7 +26,7 @@ export async function handleRefreshEmojis(
       // Re-scrape to get fresh tags (nickname, roles, etc.)
       await scrapeOneMember(interaction.client, entry.userId).catch(() => {});
 
-      const tags = getTags(entry.userId).map((t) => t.tag);
+      const tags = getTags(entry.userId);
       const emoji = await generateTagEmoji(tags);
       setTagEmoji(entry.userId, emoji);
       updated++;

@@ -32,10 +32,10 @@ export async function handleTestBirthday(
   let wish = getWishCache(user.id, currentYear)?.wish;
 
   if (!wish) {
-    const tags = getTags(user.id).map((t) => t.tag);
+    const tags = getTags(user.id);
     const messages = buildMessages(
       entry.username,
-      entry.birthday,
+      entry.tagEmoji,
       tags
     );
     try {

@@ -81,8 +81,8 @@ async function generateTodaysWishes(client: Client): Promise<void> {
       // Refresh tags before generating, so nickname is current
       await scrapeOneMember(client, entry.userId).catch(() => {});
 
-      const tags = getTags(entry.userId).map((t) => t.tag);
-      const messages = buildMessages(entry.username, entry.birthday, tags);
+      const tags = getTags(entry.userId);
+      const messages = buildMessages(entry.username, entry.tagEmoji, tags);
       const wish = await callLLM(messages);
       const currentYear = new Date().getFullYear();
       setWishCache(entry.userId, wish, currentYear);
@@ -143,10 +143,10 @@ export async function checkAndPostBirthdays(client: Client): Promise<void> {
         await scrapeOneMember(client, entry.userId).catch(
           () => {} // best-effort — if scrape fails, use whatever tags exist
         );
-        const tags = getTags(entry.userId).map((t) => t.tag);
+        const tags = getTags(entry.userId);
         const messages = buildMessages(
           entry.username,
-          entry.birthday,
+          entry.tagEmoji,
           tags
         );
         wish = await callLLM(messages);
