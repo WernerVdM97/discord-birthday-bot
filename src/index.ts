@@ -80,6 +80,8 @@ async function main(): Promise<void> {
   client.on("messageCreate", async (message) => {
     if (message.author.bot) return;
     if (!message.guild) {
+      // Don't respond to messages starting with / (likely failed slash commands)
+      if (message.content.startsWith("/")) return;
       try {
         await message.reply(buildHelpText());
       } catch {
