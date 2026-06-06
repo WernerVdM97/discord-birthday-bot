@@ -15,7 +15,7 @@ export async function handleBirthdays(
   }
 
   const lines = entries.map(
-    (e) => `• **${e.username}** — ${e.birthday}`
+    (e) => `• **${e.username}** — ${e.birthday}${e.locked ? " 🔒" : ""}`
   );
 
   await interaction.reply({

@@ -1,5 +1,6 @@
 import { type ChatInputCommandInteraction, PermissionFlagsBits } from "discord.js";
 import { upsertBirthday, isBirthdayLocked } from "../lib/db.js";
+import { getDiscordConfig } from "../lib/config.js";
 
 export async function handleSetBirthday(
   interaction: ChatInputCommandInteraction
@@ -7,10 +8,11 @@ export async function handleSetBirthday(
   const callerId = interaction.user.id;
   const target = interaction.options.getUser("user", true);
   const date = interaction.options.getString("date", true);
-  const isAdmin =
+  const isServerAdmin =
     interaction.memberPermissions?.has(
       PermissionFlagsBits.Administrator
     ) ?? false;
+  const isBotAdmin = callerId === getDiscordConfig().botAdminId;
 
   // Validate MM-DD format
   if (!/^\d{2}-\d{2}$/.test(date)) {
@@ -33,9 +35,9 @@ export async function handleSetBirthday(
     return;
   }
 
-  // Lock check: only the birthday owner or a server admin can override
+  // Lock check: only the birthday owner, server admin, or bot admin can override
   const isSelf = callerId === target.id;
-  if (isBirthdayLocked(target.id) && !isSelf && !isAdmin) {
+  if (isBirthdayLocked(target.id) && !isSelf && !isServerAdmin && !isBotAdmin) {
     await interaction.reply({
       content: `**${target.displayName}**'s birthday is locked and can only be changed by them (or an admin).`,
       ephemeral: true,
