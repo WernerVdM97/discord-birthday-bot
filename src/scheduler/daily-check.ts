@@ -246,7 +246,12 @@ export async function checkAndPostBirthdays(client: Client): Promise<void> {
 	const currentYear = new Date().getFullYear();
 
 	// Resolve wishes for all unsent users first
-	const wishes: { userId: string; username: string; text: string }[] = [];
+	const wishes: {
+		userId: string;
+		username: string;
+		text: string;
+		tagEmoji: string;
+	}[] = [];
 	for (const entry of unsent) {
 		let wish = getWishCache(entry.userId, currentYear)?.wish;
 
@@ -264,7 +269,7 @@ export async function checkAndPostBirthdays(client: Client): Promise<void> {
 					`Failed to generate on-the-fly wish for ${entry.username}:`,
 					err,
 				);
-				wish = `Happy birthday ${entry.username}! 🎂`;
+				wish = `Happy birthday ${entry.username}! ${entry.tagEmoji}`;
 				notifyAdmin(
 					client,
 					`⚠️ Failed to generate wish for ${entry.username}: ${String(err).slice(0, 200)}`,
@@ -276,13 +281,19 @@ export async function checkAndPostBirthdays(client: Client): Promise<void> {
 			userId: entry.userId,
 			username: entry.username,
 			text: wish,
+			tagEmoji: entry.tagEmoji,
 		});
 	}
 
 	// Send all concurrently — each message retries independently
 	const results = await Promise.allSettled(
 		wishes.map((w) =>
-			sendWithRetry(channel, `<@${w.userId}> ${w.text}`, w.userId, todayIso),
+			sendWithRetry(
+				channel,
+				`<@${w.userId}> ${w.tagEmoji} ${w.text}`,
+				w.userId,
+				todayIso,
+			),
 		),
 	);
 
