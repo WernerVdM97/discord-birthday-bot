@@ -2,8 +2,18 @@ import type { ChatInputCommandInteraction } from "discord.js";
 import { getAllBirthdays } from "../lib/db.js";
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 function parseMMDD(mmdd: string): { month: number; day: number } {
@@ -29,7 +39,7 @@ function daysUntil(now: Date, target: { month: number; day: number }): number {
 }
 
 export async function handleNext(
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   const entries = getAllBirthdays();
 
@@ -69,13 +79,10 @@ export async function handleNext(
     header = `📅 **${dateLabel}** (in ${minDays} days)`;
   }
 
-  const lines = upcoming.map(
-    (e) => `• ${e.tagEmoji} **${e.username}**`
-  );
+  const lines = upcoming.map((e) => `• ${e.tagEmoji} <@${e.userId}>`);
 
-  const suffix = upcoming.length > 1
-    ? `\n_${upcoming.length} birthdays on this day_`
-    : "";
+  const suffix =
+    upcoming.length > 1 ? `\n_${upcoming.length} birthdays on this day_` : "";
 
   await interaction.reply({
     content: `${header}\n${lines.join("\n")}${suffix}`,

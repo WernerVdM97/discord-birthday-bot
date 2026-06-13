@@ -3,7 +3,7 @@ import { getUpcomingBirthdays } from "../lib/db.js";
 import { isPrivileged, isRoleGateActive } from "../lib/roles.js";
 
 export async function handleUpcoming(
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   const now = new Date();
   const currentMonth = now.getMonth() + 1; // JS months are 0-indexed
@@ -24,7 +24,7 @@ export async function handleUpcoming(
   const lines = entries.map((e) => {
     const day = e.birthday.slice(3);
     const lock = showLocks ? (e.locked ? "🔒 " : "🔓 ") : "";
-    return `• ${lock}**${day}** ${e.tagEmoji} **${e.username}**`;
+    return `• ${lock}**${day}** ${e.tagEmoji} <@${e.userId}>`;
   });
 
   await interaction.reply({

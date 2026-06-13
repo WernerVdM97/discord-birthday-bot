@@ -8,7 +8,7 @@ beforeEach(() => {
 });
 
 describe("handleList", () => {
-  it("lists all birthdays", async () => {
+  it("lists all birthdays with clickable user mentions", async () => {
     upsertBirthday("u1", "Alice", "03-14");
     upsertBirthday("u2", "Bob", "12-25");
 
@@ -18,15 +18,15 @@ describe("handleList", () => {
 
     expect(interaction.reply).toHaveBeenCalledWith(
       expect.objectContaining({
-        content: expect.stringContaining("Alice"),
+        content: expect.stringContaining("<@u1>"),
         ephemeral: true,
-      })
+      }),
     );
     expect(interaction.reply).toHaveBeenCalledWith(
       expect.objectContaining({
-        content: expect.stringContaining("Bob"),
+        content: expect.stringContaining("<@u2>"),
         ephemeral: true,
-      })
+      }),
     );
   });
 
@@ -39,7 +39,7 @@ describe("handleList", () => {
       expect.objectContaining({
         content: "No birthdays stored yet.",
         ephemeral: true,
-      })
+      }),
     );
   });
 });

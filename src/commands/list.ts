@@ -4,12 +4,22 @@ import { isPrivileged, isRoleGateActive } from "../lib/roles.js";
 
 const MAX_LENGTH = 1900;
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 export async function handleList(
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   const entries = getAllBirthdays();
 
@@ -32,9 +42,9 @@ export async function handleList(
     let line: string;
     if (showLocks) {
       const lock = e.locked ? "🔒" : "🔓";
-      line = `${lock} **${day}** ${e.tagEmoji} **${e.username}**`;
+      line = `${lock} **${day}** ${e.tagEmoji} <@${e.userId}>`;
     } else {
-      line = `**${day}** ${e.tagEmoji} **${e.username}**`;
+      line = `**${day}** ${e.tagEmoji} <@${e.userId}>`;
     }
 
     const existing = groups.get(month) ?? [];
@@ -45,7 +55,7 @@ export async function handleList(
   const blocks: string[] = [];
   for (const [month, lines] of groups) {
     blocks.push(
-      `**${MONTHS[month - 1]}**\n${lines.map((l) => `• ${l}`).join("\n")}`
+      `**${MONTHS[month - 1]}**\n${lines.map((l) => `• ${l}`).join("\n")}`,
     );
   }
 
