@@ -4,7 +4,7 @@ import {
   generateWishes,
   regenerateMonthly,
 } from "../src/lib/llm.js";
-import { initDb, upsertBirthday, addTrait, getWishCache } from "../src/lib/db.js";
+import { initDb, upsertBirthday, addTag, getWishCache } from "../src/lib/db.js";
 
 beforeEach(() => {
   process.env["DEEPSEEK_API_KEY"] = "sk-test";
@@ -14,22 +14,30 @@ beforeEach(() => {
 });
 
 describe("buildMessages", () => {
-  it("includes system prompt and user traits", () => {
-    const messages = buildMessages("Alice", "03-14", ["admin", "memelord"]);
+  it("includes system prompt and user tags", () => {
+    const tags = [
+      { userId: "u1", tag: "admin", source: "manual" as const },
+      { userId: "u1", tag: "memelord", source: "scraped" as const },
+    ];
+    const messages = buildMessages("Alice", "🔥", tags);
 
     expect(messages).toHaveLength(2);
     expect(messages[0].role).toBe("system");
     expect(messages[0].content.toLowerCase()).toContain("dank");
     expect(messages[1].role).toBe("user");
     expect(messages[1].content).toContain("Alice");
-    expect(messages[1].content).toContain("03-14");
+    expect(messages[1].content).toContain("🔥");
     expect(messages[1].content).toContain("admin");
     expect(messages[1].content).toContain("memelord");
+    // system prompt should warn about date and weight manual tags
+    expect(messages[0].content).toContain("date");
+    expect(messages[0].content.toLowerCase()).toContain("manual");
   });
 
-  it("handles empty traits", () => {
-    const messages = buildMessages("Bob", "12-25", []);
-    expect(messages[1].content).toContain("no known traits");
+  it("handles empty tags", () => {
+    const messages = buildMessages("Bob", "🎂", []);
+    expect(messages[1].content).toContain("Bob");
+    expect(messages[1].content).toContain("none");
   });
 });
 
@@ -46,9 +54,9 @@ describe("generateWishes", () => {
     vi.stubGlobal("fetch", mockFetch);
 
     upsertBirthday("u1", "Alice", "03-14");
-    addTrait("u1", "admin", "scraped");
+    addTag("u1", "admin", "scraped");
 
-    const entries = [{ userId: "u1", username: "Alice", birthday: "03-14", updatedAt: "" }];
+    const entries = [{ userId: "u1", username: "Alice", birthday: "03-14", locked: false, tagEmoji: "🎂", updatedAt: "" }];
     const wishes = await generateWishes(entries);
 
     expect(wishes.get("u1")).toBe("Happy birthday Alice, you absolute legend! 🎂");
@@ -72,7 +80,7 @@ describe("generateWishes", () => {
     vi.stubGlobal("fetch", mockFetch);
 
     upsertBirthday("u1", "Alice", "03-14");
-    const entries = [{ userId: "u1", username: "Alice", birthday: "03-14", updatedAt: "" }];
+    const entries = [{ userId: "u1", username: "Alice", birthday: "03-14", locked: false, tagEmoji: "🎂", updatedAt: "" }];
 
     // First call populates cache
     await generateWishes(entries);
@@ -91,7 +99,7 @@ describe("generateWishes", () => {
     vi.stubGlobal("fetch", mockFetch);
 
     upsertBirthday("u1", "Alice", "03-14");
-    const entries = [{ userId: "u1", username: "Alice", birthday: "03-14", updatedAt: "" }];
+    const entries = [{ userId: "u1", username: "Alice", birthday: "03-14", locked: false, tagEmoji: "🎂", updatedAt: "" }];
 
     const wishes = await generateWishes(entries);
 
@@ -110,7 +118,7 @@ describe("generateWishes", () => {
     vi.stubGlobal("fetch", mockFetch);
 
     upsertBirthday("u1", "Alice", "03-14");
-    const entries = [{ userId: "u1", username: "Alice", birthday: "03-14", updatedAt: "" }];
+    const entries = [{ userId: "u1", username: "Alice", birthday: "03-14", locked: false, tagEmoji: "🎂", updatedAt: "" }];
 
     const wishes = await generateWishes(entries);
 
@@ -142,7 +150,7 @@ describe("regenerateMonthly", () => {
     vi.stubGlobal("fetch", mockFetch);
 
     upsertBirthday("u1", "Alice", "03-14");
-    const entries = [{ userId: "u1", username: "Alice", birthday: "03-14", updatedAt: "" }];
+    const entries = [{ userId: "u1", username: "Alice", birthday: "03-14", locked: false, tagEmoji: "🎂", updatedAt: "" }];
 
     // First generation
     const w1 = await regenerateMonthly(entries);

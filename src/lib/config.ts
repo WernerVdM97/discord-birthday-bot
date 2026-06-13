@@ -14,6 +14,9 @@ export function getDiscordConfig(): DiscordConfig {
     appId: requireEnv("DISCORD_APP_ID"),
     guildId: requireEnv("DISCORD_GUILD_ID"),
     announcementsChannelId: requireEnv("ANNOUNCEMENTS_CHANNEL_ID"),
+    botAdminId: process.env["BOT_ADMIN_ID"] || undefined,
+    adminRoleId: process.env["BOT_ADMIN_ROLE_ID"] || undefined,
+    memberRoleId: process.env["BOT_MEMBER_ROLE_ID"] || undefined,
   };
 }
 

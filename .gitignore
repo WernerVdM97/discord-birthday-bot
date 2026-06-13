@@ -6,3 +6,5 @@ cache/
 *.tsbuildinfo
 :memory:*
 scripts/seed.json
+scripts/seed-from-names.ts
+scripts/seed.csv

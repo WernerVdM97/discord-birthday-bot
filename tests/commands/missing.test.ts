@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { handleMissing } from "../../src/commands/missing.js";
 import { initDb, upsertBirthday } from "../../src/lib/db.js";
 import { mockInteraction } from "./helpers.js";
@@ -71,6 +71,62 @@ describe("handleMissing", () => {
     expect(interaction.reply).toHaveBeenCalledWith(
       expect.objectContaining({
         content: expect.stringContaining("server"),
+      })
+    );
+  });
+});
+
+describe("handleMissing with role gate", () => {
+  beforeEach(() => {
+    process.env["BOT_ADMIN_ROLE_ID"] = "role-admin";
+    process.env["BOT_MEMBER_ROLE_ID"] = "role-member";
+  });
+
+  afterEach(() => {
+    delete process.env["BOT_ADMIN_ROLE_ID"];
+    delete process.env["BOT_MEMBER_ROLE_ID"];
+  });
+
+  it("rejects users without a role", async () => {
+    const interaction = mockInteraction({
+      guild: { members: { fetch: vi.fn(), cache: new Map() } } as unknown as Record<string, unknown>,
+    });
+
+    await handleMissing(interaction);
+
+    expect(interaction.reply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.stringContaining("permission"),
+      })
+    );
+  });
+
+  it("allows member role to use missing", async () => {
+    const makeMember = (id: string, name: string) => ({
+      id,
+      displayName: name,
+      user: { bot: false },
+      roles: { cache: { has: (roleId: string) => roleId === "role-member" } },
+    });
+    const membersCache = new Map([
+      ["u1", makeMember("u1", "Alice")],
+    ]);
+    const guild = {
+      members: { fetch: vi.fn().mockResolvedValue(undefined), cache: membersCache },
+    };
+
+    upsertBirthday("u1", "Alice", "03-14");
+
+    const interaction = mockInteraction({
+      roleIds: ["role-member"],
+      guild: guild as unknown as Record<string, unknown>,
+    });
+
+    await handleMissing(interaction);
+
+    expect(interaction.reply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.stringContaining("🎉"),
       })
     );
   });

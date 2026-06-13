@@ -6,10 +6,10 @@ import {
   getUpcomingBirthdays,
   upsertBirthday,
   isBirthdayLocked,
-  getTraits,
-  getTraitsForUsers,
-  addTrait,
-  clearManualTraits,
+  getTags,
+  getTagsForUsers,
+  addTag,
+  clearManualTags,
   getWishCache,
   setWishCache,
 } from "../src/lib/db.js";
@@ -101,61 +101,61 @@ describe("birthdays", () => {
   });
 });
 
-describe("traits", () => {
+describe("tags", () => {
   it("returns empty array for unknown user", () => {
-    expect(getTraits("u1")).toEqual([]);
+    expect(getTags("u1")).toEqual([]);
   });
 
-  it("adds and retrieves traits", () => {
-    addTrait("u1", "admin", "scraped");
-    addTrait("u1", "memelord", "manual");
-    const traits = getTraits("u1");
-    expect(traits).toHaveLength(2);
-    expect(traits).toContainEqual({
+  it("adds and retrieves tags", () => {
+    addTag("u1", "admin", "scraped");
+    addTag("u1", "memelord", "manual");
+    const tags = getTags("u1");
+    expect(tags).toHaveLength(2);
+    expect(tags).toContainEqual({
       userId: "u1",
-      trait: "admin",
+      tag: "admin",
       source: "scraped",
     });
-    expect(traits).toContainEqual({
+    expect(tags).toContainEqual({
       userId: "u1",
-      trait: "memelord",
+      tag: "memelord",
       source: "manual",
     });
   });
 
-  it("addTrait ignores duplicate", () => {
-    addTrait("u1", "admin", "scraped");
-    addTrait("u1", "admin", "manual");
-    expect(getTraits("u1")).toHaveLength(1);
+  it("addTag ignores duplicate", () => {
+    addTag("u1", "admin", "scraped");
+    addTag("u1", "admin", "manual");
+    expect(getTags("u1")).toHaveLength(1);
     // first insert wins (scraped), manual ignored
-    expect(getTraits("u1")[0].source).toBe("scraped");
+    expect(getTags("u1")[0].source).toBe("scraped");
   });
 
-  it("clearManualTraits only removes manual", () => {
-    addTrait("u1", "admin", "scraped");
-    addTrait("u1", "memelord", "manual");
-    addTrait("u1", "chaos", "manual");
+  it("clearManualTags only removes manual", () => {
+    addTag("u1", "admin", "scraped");
+    addTag("u1", "memelord", "manual");
+    addTag("u1", "chaos", "manual");
 
-    clearManualTraits("u1");
-    const traits = getTraits("u1");
-    expect(traits).toHaveLength(1);
-    expect(traits[0].trait).toBe("admin");
-    expect(traits[0].source).toBe("scraped");
+    clearManualTags("u1");
+    const tags = getTags("u1");
+    expect(tags).toHaveLength(1);
+    expect(tags[0].tag).toBe("admin");
+    expect(tags[0].source).toBe("scraped");
   });
 
-  it("getTraitsForUsers returns map of traits", () => {
-    addTrait("u1", "admin", "scraped");
-    addTrait("u1", "memelord", "manual");
-    addTrait("u2", "newbie", "scraped");
+  it("getTagsForUsers returns map of tags", () => {
+    addTag("u1", "admin", "scraped");
+    addTag("u1", "memelord", "manual");
+    addTag("u2", "newbie", "scraped");
 
-    const map = getTraitsForUsers(["u1", "u2", "u3"]);
+    const map = getTagsForUsers(["u1", "u2", "u3"]);
     expect(map.get("u1")).toEqual(["admin", "memelord"]);
     expect(map.get("u2")).toEqual(["newbie"]);
     expect(map.get("u3")).toBeUndefined();
   });
 
-  it("getTraitsForUsers with empty array returns empty map", () => {
-    expect(getTraitsForUsers([]).size).toBe(0);
+  it("getTagsForUsers with empty array returns empty map", () => {
+    expect(getTagsForUsers([]).size).toBe(0);
   });
 });
 

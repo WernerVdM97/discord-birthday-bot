@@ -1,5 +1,6 @@
-import { type ChatInputCommandInteraction, PermissionFlagsBits } from "discord.js";
+import { type ChatInputCommandInteraction } from "discord.js";
 import { upsertBirthday, isBirthdayLocked } from "../lib/db.js";
+import { isPrivileged, isMemberOrAbove, isRoleGateActive } from "../lib/roles.js";
 
 export async function handleSetBirthday(
   interaction: ChatInputCommandInteraction
@@ -7,10 +8,8 @@ export async function handleSetBirthday(
   const callerId = interaction.user.id;
   const target = interaction.options.getUser("user", true);
   const date = interaction.options.getString("date", true);
-  const isAdmin =
-    interaction.memberPermissions?.has(
-      PermissionFlagsBits.Administrator
-    ) ?? false;
+  const isSelf = callerId === target.id;
+  const privileged = isPrivileged(interaction);
 
   // Validate MM-DD format
   if (!/^\d{2}-\d{2}$/.test(date)) {
@@ -33,17 +32,46 @@ export async function handleSetBirthday(
     return;
   }
 
-  // Lock check: only the birthday owner or a server admin can override
-  const isSelf = callerId === target.id;
-  if (isBirthdayLocked(target.id) && !isSelf && !isAdmin) {
-    await interaction.reply({
-      content: `**${target.displayName}**'s birthday is locked and can only be changed by them (or an admin).`,
-      ephemeral: true,
-    });
-    return;
+  if (isRoleGateActive()) {
+    const member = isMemberOrAbove(interaction);
+
+    if (!privileged && !member) {
+      await interaction.reply({
+        content: "You don't have permission to set birthdays.",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // Members (not privileged) can only set their own birthday
+    if (!privileged && !isSelf) {
+      await interaction.reply({
+        content: "You can only set your own birthday.",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // Members can't override a locked birthday (unless it's their own lock)
+    if (!privileged && isBirthdayLocked(target.id) && !isSelf) {
+      await interaction.reply({
+        content: `**${target.displayName}**'s birthday is locked.`,
+        ephemeral: true,
+      });
+      return;
+    }
+  } else {
+    // No role gate: lock override for privileged users
+    if (isBirthdayLocked(target.id) && !isSelf && !privileged) {
+      await interaction.reply({
+        content: `**${target.displayName}**'s birthday is locked and can only be changed by them (or an admin).`,
+        ephemeral: true,
+      });
+      return;
+    }
   }
 
-  // Self-set → lock; others setting for someone else → unlocked
+  // Self-set → always lock (everyone, including bot admin)
   upsertBirthday(target.id, target.displayName, date, isSelf);
 
   const lockNotice = isSelf ? " 🔒 (locked)" : "";

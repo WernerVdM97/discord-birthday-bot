@@ -3,12 +3,13 @@ export interface Birthday {
   username: string;
   birthday: string; // 'MM-DD'
   locked: boolean;
+  tagEmoji: string;
   updatedAt: string; // ISO timestamp
 }
 
-export interface Trait {
+export interface Tag {
   userId: string;
-  trait: string;
+  tag: string;
   source: "scraped" | "manual";
 }
 
@@ -24,6 +25,9 @@ export interface DiscordConfig {
   appId: string;
   guildId: string;
   announcementsChannelId: string;
+  botAdminId?: string;
+  adminRoleId?: string;
+  memberRoleId?: string;
 }
 
 export interface LLMConfig {

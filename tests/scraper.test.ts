@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { extractTraits, scrapeAllMembers } from "../src/lib/scraper.js";
-import { initDb, getTraits } from "../src/lib/db.js";
+import { extractTags, scrapeAllMembers } from "../src/lib/scraper.js";
+import { initDb, getTags } from "../src/lib/db.js";
 
 function setupDb(): void {
   process.env["DISCORD_TOKEN"] = "mock";
@@ -12,7 +12,7 @@ function setupDb(): void {
 
 beforeEach(setupDb);
 
-// --- extractTraits tests ---
+// --- extractTags tests ---
 
 function makeMockMember(overrides: Record<string, unknown> = {}) {
   const roleNames: string[] =
@@ -38,82 +38,82 @@ function makeMockMember(overrides: Record<string, unknown> = {}) {
   };
 }
 
-describe("extractTraits", () => {
-  it("extracts roles as traits", () => {
-    const traits = extractTraits(
+describe("extractTags", () => {
+  it("extracts roles as tags", () => {
+    const tags = extractTags(
       makeMockMember({
         roleNames: ["Admin", "Mod", "VIP"],
-      }) as Parameters<typeof extractTraits>[0]
+      }) as Parameters<typeof extractTags>[0]
     );
-    expect(traits).toContain("role:Admin");
-    expect(traits).toContain("role:Mod");
-    expect(traits).toContain("role:VIP");
+    expect(tags).toContain("role:Admin");
+    expect(tags).toContain("role:Mod");
+    expect(tags).toContain("role:VIP");
   });
 
   it("caps roles at 5", () => {
     // slice is mocked to actually slice, so if we pass 10 roles it returns first 5.
     // But our mock's slice is a simple array slice. Let's verify it works.
     const roleNames = ["A", "B", "C", "D", "E", "F", "G"];
-    const traits = extractTraits(
-      makeMockMember({ roleNames }) as Parameters<typeof extractTraits>[0]
+    const tags = extractTags(
+      makeMockMember({ roleNames }) as Parameters<typeof extractTags>[0]
     );
-    const roleTraits = traits.filter((t) => t.startsWith("role:"));
-    expect(roleTraits).toHaveLength(5);
+    const roleTags = tags.filter((t) => t.startsWith("role:"));
+    expect(roleTags).toHaveLength(5);
   });
 
   it("extracts nickname when different from display name", () => {
-    const traits = extractTraits(
+    const tags = extractTags(
       makeMockMember({
         nickname: "Memelord420",
         displayName: "TestUser",
-      }) as Parameters<typeof extractTraits>[0]
+      }) as Parameters<typeof extractTags>[0]
     );
-    expect(traits).toContain("nickname:Memelord420");
+    expect(tags).toContain("nickname:Memelord420");
   });
 
   it("skips nickname when same as display name", () => {
-    const traits = extractTraits(
+    const tags = extractTags(
       makeMockMember({
         nickname: "TestUser",
         displayName: "TestUser",
-      }) as Parameters<typeof extractTraits>[0]
+      }) as Parameters<typeof extractTags>[0]
     );
-    const nickTraits = traits.filter((t) => t.startsWith("nickname:"));
-    expect(nickTraits).toHaveLength(0);
+    const nickTags = tags.filter((t) => t.startsWith("nickname:"));
+    expect(nickTags).toHaveLength(0);
   });
 
   it("skips nickname when null", () => {
-    const traits = extractTraits(
+    const tags = extractTags(
       makeMockMember({
         nickname: null,
         displayName: "TestUser",
-      }) as Parameters<typeof extractTraits>[0]
+      }) as Parameters<typeof extractTags>[0]
     );
-    const nickTraits = traits.filter((t) => t.startsWith("nickname:"));
-    expect(nickTraits).toHaveLength(0);
+    const nickTags = tags.filter((t) => t.startsWith("nickname:"));
+    expect(nickTags).toHaveLength(0);
   });
 
   it("extracts join date", () => {
     const joinedAt = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
-    const traits = extractTraits(
-      makeMockMember({ joinedAt }) as Parameters<typeof extractTraits>[0]
+    const tags = extractTags(
+      makeMockMember({ joinedAt }) as Parameters<typeof extractTags>[0]
     );
-    expect(traits).toContain("joined:30d ago");
+    expect(tags).toContain("joined:30d ago");
   });
 
   it("skips join date when null", () => {
-    const traits = extractTraits(
-      makeMockMember({ joinedAt: null }) as Parameters<typeof extractTraits>[0]
+    const tags = extractTags(
+      makeMockMember({ joinedAt: null }) as Parameters<typeof extractTags>[0]
     );
-    const joinTraits = traits.filter((t) => t.startsWith("joined:"));
-    expect(joinTraits).toHaveLength(0);
+    const joinTags = tags.filter((t) => t.startsWith("joined:"));
+    expect(joinTags).toHaveLength(0);
   });
 });
 
 // --- scrapeAllMembers tests ---
 
 describe("scrapeAllMembers", () => {
-  it("populates scraped traits for members without them", async () => {
+  it("populates scraped tags for members without them", async () => {
     const guild = {
       members: {
         fetch: vi.fn().mockResolvedValue(undefined),
@@ -162,25 +162,25 @@ describe("scrapeAllMembers", () => {
 
     await scrapeAllMembers(client as unknown as Parameters<typeof scrapeAllMembers>[0]);
 
-    const u1Traits = getTraits("u1").filter((t) => t.source === "scraped");
-    const u2Traits = getTraits("u2").filter((t) => t.source === "scraped");
-    const botTraits = getTraits("bot-1").filter((t) => t.source === "scraped");
+    const u1Tags = getTags("u1").filter((t) => t.source === "scraped");
+    const u2Tags = getTags("u2").filter((t) => t.source === "scraped");
+    const botTags = getTags("bot-1").filter((t) => t.source === "scraped");
 
-    expect(u1Traits.length).toBeGreaterThan(0);
-    expect(u1Traits.map((t) => t.trait)).toContain("role:Admin");
-    expect(u1Traits.map((t) => t.trait)).toContain("nickname:Boss");
+    expect(u1Tags.length).toBeGreaterThan(0);
+    expect(u1Tags.map((t) => t.tag)).toContain("role:Admin");
+    expect(u1Tags.map((t) => t.tag)).toContain("nickname:Boss");
 
-    expect(u2Traits.length).toBeGreaterThan(0);
-    expect(u2Traits.map((t) => t.trait)).toContain("role:Mod");
+    expect(u2Tags.length).toBeGreaterThan(0);
+    expect(u2Tags.map((t) => t.tag)).toContain("role:Mod");
 
     // Bots are skipped
-    expect(botTraits).toHaveLength(0);
+    expect(botTags).toHaveLength(0);
   });
 
-  it("skips members who already have scraped traits", async () => {
-    // Pre-populate scraped traits for u1
-    const { addTrait } = await import("../src/lib/db.js");
-    addTrait("u1", "role:Admin", "scraped");
+  it("skips members who already have scraped tags", async () => {
+    // Pre-populate scraped tags for u1
+    const { addTag } = await import("../src/lib/db.js");
+    addTag("u1", "role:Admin", "scraped");
 
     const guild = {
       members: {
@@ -211,10 +211,10 @@ describe("scrapeAllMembers", () => {
 
     await scrapeAllMembers(client as unknown as Parameters<typeof scrapeAllMembers>[0]);
 
-    // Should still only have the original role:Admin trait, no new ones added
-    const scraped = getTraits("u1").filter((t) => t.source === "scraped");
+    // Should still only have the original role:Admin tag, no new ones added
+    const scraped = getTags("u1").filter((t) => t.source === "scraped");
     expect(scraped).toHaveLength(1);
-    expect(scraped[0].trait).toBe("role:Admin");
+    expect(scraped[0].tag).toBe("role:Admin");
   });
 
   it("throws when guild not found", async () => {
