@@ -7,9 +7,8 @@ import {
 import { initDb, upsertBirthday, addTag, getWishCache } from "../src/lib/db.js";
 
 beforeEach(() => {
-  process.env["DEEPSEEK_API_KEY"] = "sk-test";
-  process.env["DEEPSEEK_BASE_URL"] = "https://api.deepseek.com";
-  process.env["DEEPSEEK_MODEL"] = "deepseek-chat";
+  process.env["OPENROUTER_API_KEY"] = "sk-or-test";
+  process.env["OPENROUTER_MODEL"] = "deepseek/deepseek-v4.1-flash";
   initDb(":memory:");
 });
 
@@ -60,6 +59,18 @@ describe("generateWishes", () => {
     const wishes = await generateWishes(entries);
 
     expect(wishes.get("u1")).toBe("Happy birthday Alice, you absolute legend! 🎂");
+
+    // Request must go to OpenRouter with the provider pin attached
+    const [url, init] = mockFetch.mock.calls[0];
+    expect(url).toBe("https://openrouter.ai/api/v1/chat/completions");
+    const body = JSON.parse(init.body);
+    expect(body.model).toBe("deepseek/deepseek-v4.1-flash");
+    expect(body.provider).toEqual({
+      order: ["deepseek", "inference-net", "morph", "wafer"],
+      allow_fallbacks: false,
+    });
+    // Reasoning eats the max_tokens budget and returns null content if left on
+    expect(body.reasoning).toEqual({ enabled: false });
 
     // Should be cached
     const cached = getWishCache("u1", new Date().getFullYear());

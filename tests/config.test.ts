@@ -6,9 +6,8 @@ beforeEach(() => {
   delete process.env["DISCORD_APP_ID"];
   delete process.env["DISCORD_GUILD_ID"];
   delete process.env["ANNOUNCEMENTS_CHANNEL_ID"];
-  delete process.env["DEEPSEEK_API_KEY"];
-  delete process.env["DEEPSEEK_BASE_URL"];
-  delete process.env["DEEPSEEK_MODEL"];
+  delete process.env["OPENROUTER_API_KEY"];
+  delete process.env["OPENROUTER_MODEL"];
 });
 
 describe("getDiscordConfig", () => {
@@ -63,32 +62,29 @@ describe("getDiscordConfig", () => {
 
 describe("getLLMConfig", () => {
   it("returns config with defaults when only key is set", () => {
-    process.env["DEEPSEEK_API_KEY"] = "sk-key";
+    process.env["OPENROUTER_API_KEY"] = "sk-or-key";
 
     const config = getLLMConfig();
 
     expect(config).toEqual({
-      apiKey: "sk-key",
-      baseUrl: "https://api.deepseek.com",
-      model: "deepseek-chat",
+      apiKey: "sk-or-key",
+      model: "deepseek/deepseek-v4.1-flash",
     });
   });
 
-  it("returns custom base URL and model when set", () => {
-    process.env["DEEPSEEK_API_KEY"] = "sk-key";
-    process.env["DEEPSEEK_BASE_URL"] = "https://custom.proxy";
-    process.env["DEEPSEEK_MODEL"] = "deepseek-reasoner";
+  it("returns custom model when set", () => {
+    process.env["OPENROUTER_API_KEY"] = "sk-or-key";
+    process.env["OPENROUTER_MODEL"] = "deepseek/deepseek-chat";
 
     const config = getLLMConfig();
 
     expect(config).toEqual({
-      apiKey: "sk-key",
-      baseUrl: "https://custom.proxy",
-      model: "deepseek-reasoner",
+      apiKey: "sk-or-key",
+      model: "deepseek/deepseek-chat",
     });
   });
 
-  it("throws when DEEPSEEK_API_KEY is missing", () => {
-    expect(() => getLLMConfig()).toThrow("DEEPSEEK_API_KEY");
+  it("throws when OPENROUTER_API_KEY is missing", () => {
+    expect(() => getLLMConfig()).toThrow("OPENROUTER_API_KEY");
   });
 });

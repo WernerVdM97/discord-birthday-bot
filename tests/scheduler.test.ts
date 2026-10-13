@@ -7,7 +7,7 @@ beforeEach(() => {
   process.env["DISCORD_APP_ID"] = "mock";
   process.env["DISCORD_GUILD_ID"] = "mock";
   process.env["ANNOUNCEMENTS_CHANNEL_ID"] = "chan-1";
-  process.env["DEEPSEEK_API_KEY"] = "sk-test";
+  process.env["OPENROUTER_API_KEY"] = "sk-or-test";
   initDb(":memory:");
   vi.useFakeTimers();
 });
