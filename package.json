@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@vitest/coverage-v8": "^4.1.10",
-    "better-sqlite3": "^12.10.0",
+    "better-sqlite3": "^13.0.3",
     "discord.js": "^14.27.0",
     "node-cron": "^4.6.0"
   },
