@@ -32,6 +32,5 @@ export interface DiscordConfig {
 
 export interface LLMConfig {
   apiKey: string;
-  baseUrl: string;
   model: string;
 }

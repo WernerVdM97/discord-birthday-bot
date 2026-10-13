@@ -35,7 +35,7 @@ Dank, meme-heavy birthday wishes for a private Discord server (~20 people).
 - [discord.js](https://discord.js.org/) v14 — Discord gateway + slash commands
 - [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) — zero-config local DB
 - [node-cron](https://github.com/node-cron/node-cron) — daily + monthly scheduler
-- [DeepSeek API](https://api-docs.deepseek.com/) — LLM for wish generation
+- [OpenRouter](https://openrouter.ai/) — LLM access, pinned to the DeepSeek first-party host
 - [Vitest](https://vitest.dev/) — test runner
 - TypeScript, systemd
 
@@ -51,10 +51,12 @@ Dank, meme-heavy birthday wishes for a private Discord server (~20 people).
    - Use the generated URL to invite the bot to your server
 4. Enable **Server Members Intent** in the Bot tab (for tag scraping). DMs work by default — no extra toggle needed.
 
-### 2. Get a DeepSeek API key
+### 2. Get an OpenRouter API key
 
-1. Sign up at [platform.deepseek.com](https://platform.deepseek.com/)
+1. Sign up at [openrouter.ai](https://openrouter.ai/)
 2. Create an API key
+
+Calls are pinned to the DeepSeek first-party host, falling back to inference.net, morph, then wafer.
 
 ### 3. Clone and configure on the Pi
 
@@ -84,6 +86,7 @@ sudo systemctl enable --now birthday-bot-deploy.timer
 ```
 
 Check status:
+
 ```bash
 sudo systemctl status birthday-bot
 journalctl -u birthday-bot -f
@@ -102,6 +105,7 @@ This wipes all birthdays, tags, and wish cache. The bot rebuilds the schema on s
 ### 5. Seed the initial birthday list
 
 Copy the example file, edit with real Discord user IDs, and run:
+
 ```bash
 cp scripts/seed.example.json scripts/seed.json
 nano scripts/seed.json       # replace placeholder snowflakes, set locked: true for self-set
@@ -109,6 +113,7 @@ npx tsx scripts/seed.ts
 ```
 
 Or add one at a time with slash commands once the bot is online:
+
 ```
 /set-birthday @yourself 03-14
 ```
@@ -116,7 +121,7 @@ Or add one at a time with slash commands once the bot is online:
 ## Environment Variables
 
 | Variable | Description |
-|---|---|
+| --- | --- |
 | `DISCORD_TOKEN` | Bot token from Discord Developer Portal |
 | `DISCORD_APP_ID` | Application ID from General Information |
 | `DISCORD_GUILD_ID` | Your server's ID (right-click server → Copy ID) |
@@ -124,7 +129,8 @@ Or add one at a time with slash commands once the bot is online:
 | `BOT_ADMIN_ID` | (Optional) Your Discord user ID — gets DM notifications, can override locks, use bot-owner commands (`/trigger` `/update` `/test-birthday`) |
 | `BOT_ADMIN_ROLE_ID` | (Optional) Discord role ID for admins — can set any birthday, override locks, manage all tags |
 | `BOT_MEMBER_ROLE_ID` | (Optional) Discord role ID for members — can set own birthday (locks) and add tags. Cannot override locks. |
-| `DEEPSEEK_API_KEY` | DeepSeek API key |
+| `OPENROUTER_API_KEY` | OpenRouter API key |
+| `OPENROUTER_MODEL` | (Optional) Override the model slug, defaults to `deepseek/deepseek-v4.1-flash`. Must be a slug one of the pinned hosts serves. |
 | `CRON_SCHEDULE` | (Optional) Cron expression for the daily check — defaults to `0 7 * * *` (7am) |
 | `BOT_TAG_BLOCKLIST` | (Optional) Comma-separated blocked substrings for tags (defaults to common slurs) |
 

@@ -1,4 +1,10 @@
 import { getLLMConfig } from "./config.js";
+import {
+  OPENROUTER_PROVIDER_ROUTING,
+  OPENROUTER_REASONING,
+  OPENROUTER_TITLE,
+  OPENROUTER_URL,
+} from "./openrouter.js";
 import type { Birthday, Tag } from "../types.js";
 import { getTags, getWishCache, setWishCache } from "./db.js";
 
@@ -73,19 +79,22 @@ export function buildMessages(
 }
 
 export async function callLLM(messages: ChatMessage[]): Promise<string> {
-  const { apiKey, baseUrl, model } = getLLMConfig();
+  const { apiKey, model } = getLLMConfig();
 
-  const response = await fetch(`${baseUrl}/v1/chat/completions`, {
+  const response = await fetch(OPENROUTER_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
+      "X-Title": OPENROUTER_TITLE,
     },
     body: JSON.stringify({
       model,
       messages,
       max_tokens: 100,
       temperature: 0.9,
+      reasoning: OPENROUTER_REASONING,
+      provider: OPENROUTER_PROVIDER_ROUTING,
     }),
   });
 

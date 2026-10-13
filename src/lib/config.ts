@@ -1,4 +1,5 @@
 import type { DiscordConfig, LLMConfig } from "../types.js";
+import { DEFAULT_LLM_MODEL } from "./openrouter.js";
 
 function requireEnv(key: string): string {
   const value = process.env[key];
@@ -22,8 +23,7 @@ export function getDiscordConfig(): DiscordConfig {
 
 export function getLLMConfig(): LLMConfig {
   return {
-    apiKey: requireEnv("DEEPSEEK_API_KEY"),
-    baseUrl: process.env["DEEPSEEK_BASE_URL"] ?? "https://api.deepseek.com",
-    model: process.env["DEEPSEEK_MODEL"] ?? "deepseek-chat",
+    apiKey: requireEnv("OPENROUTER_API_KEY"),
+    model: process.env["OPENROUTER_MODEL"] ?? DEFAULT_LLM_MODEL,
   };
 }
